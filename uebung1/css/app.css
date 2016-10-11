@@ -15,9 +15,44 @@ section article{
     height: 50vh;
 }
 
-section article video {
+section article figure{
+    position: relative;
+}
+
+section article figure video {
     display: block;
     margin: 0 auto;
+    width:100%;
+}
+
+section article figure .controls{
+    margin: 0;
+    padding:0;
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,.5);
+}
+
+section article figure .controls.fullscreen{
+    width:500px;
+    margin:0 auto;
+    bottom: 1em;
+    padding:10px;
+}
+
+section article figure .controls li
+{
+    float: left;
+    list-style: none;
+}
+
+section article figure .controls li button
+{
+    border: none;
+    background-color: transparent;
+    color: #fff;
 }
 
 aside {
@@ -31,6 +66,10 @@ aside nav{
     width: 315px;
 }
 
+/******************************************************************
+    Helper Classes
+******************************************************************/
+
 /* fix for float */
 .group:before,
 .group:after {
@@ -43,4 +82,11 @@ aside nav{
 }
 .group {
     zoom: 1; /* For IE 6/7 (trigger hasLayout) */
+}
+
+.show {
+    display: block !important;
+}
+.hidden {
+    display: none !important;
 }

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Übung1 von EvilCorp</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
     <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -15,31 +16,154 @@
     <section>
         <article id="video1">
             <h3>Video 1</h3>
-            <video>
+            <figure class="videoContainer">
+                <video>
+                    <source src=http://techslides.com/demos/sample-videos/small.webm type=video/webm>
+                    <source src=http://techslides.com/demos/sample-videos/small.ogv type=video/ogg>
+                    <source src=http://techslides.com/demos/sample-videos/small.mp4 type=video/mp4>
+                    <source src=http://techslides.com/demos/sample-videos/small.3gp type=video/3gp>
+                </video>
+                <ul class="controls">
+                    <li>
+                        <button class="playpause" type="button">
+                            <i class="fa fa-play" aria-hidden="true"></i>
+                            <i class="fa fa-pause hidden" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="stop" type="button">
+                            <i class="fa fa-stop" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li class="progress-wrapper">
+                        <progress class="progress" value="0" min="0">
+                            <span class="progress-bar"></span>
+                        </progress>
+                    </li>
+                    <li>
+                        <button class="mute" type="button">
+                            <i class="fa fa-volume-off" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="volinc" type="button">
+                            <i class="fa fa-volume-up" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="voldec" type="button">
+                            <i class="fa fa-volume-down" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="fs" type="button">
+                            <i class="fa fa-expand" aria-hidden="true"></i>
+                            <i class="fa fa-compress hidden" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                </ul>
+            </figure>
 
-                <source src=http://techslides.com/demos/sample-videos/small.webm type=video/webm>
-                <source src=http://techslides.com/demos/sample-videos/small.ogv type=video/ogg>
-                <source src=http://techslides.com/demos/sample-videos/small.mp4 type=video/mp4>
-                <source src=http://techslides.com/demos/sample-videos/small.3gp type=video/3gp>
-            </video>
         </article>
         <article id="video2">
             <h3>Video 2</h3>
-            <video>
-                <source src=http://techslides.com/demos/sample-videos/small.webm type=video/webm>
-                <source src=http://techslides.com/demos/sample-videos/small.ogv type=video/ogg>
-                <source src=http://techslides.com/demos/sample-videos/small.mp4 type=video/mp4>
-                <source src=http://techslides.com/demos/sample-videos/small.3gp type=video/3gp>
-            </video>
+            <figure class="videoContainer">
+                <video>
+                    <source src=http://techslides.com/demos/sample-videos/small.webm type=video/webm>
+                    <source src=http://techslides.com/demos/sample-videos/small.ogv type=video/ogg>
+                    <source src=http://techslides.com/demos/sample-videos/small.mp4 type=video/mp4>
+                    <source src=http://techslides.com/demos/sample-videos/small.3gp type=video/3gp>
+                </video>
+                <ul class="controls">
+                    <li>
+                        <button class="playpause" type="button">
+                            <i class="fa fa-play" aria-hidden="true"></i>
+                            <i class="fa fa-pause hidden" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="stop" type="button">
+                            <i class="fa fa-stop" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li class="progress-wrapper">
+                        <progress class="progress" value="0" min="0">
+                            <span class="progress-bar"></span>
+                        </progress>
+                    </li>
+                    <li>
+                        <button class="mute" type="button">
+                            <i class="fa fa-volume-off" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="volinc" type="button">
+                            <i class="fa fa-volume-up" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="voldec" type="button">
+                            <i class="fa fa-volume-down" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="fs" type="button">
+                            <i class="fa fa-expand" aria-hidden="true"></i>
+                            <i class="fa fa-compress hidden" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                </ul>
+            </figure>
         </article>
         <article id="video3">
             <h3>Video 3</h3>
-            <video>
-                <source src=http://techslides.com/demos/sample-videos/small.webm type=video/webm>
-                <source src=http://techslides.com/demos/sample-videos/small.ogv type=video/ogg>
-                <source src=http://techslides.com/demos/sample-videos/small.mp4 type=video/mp4>
-                <source src=http://techslides.com/demos/sample-videos/small.3gp type=video/3gp>
-            </video>
+            <figure class="videoContainer">
+                <video>
+                    <source src=http://techslides.com/demos/sample-videos/small.webm type=video/webm>
+                    <source src=http://techslides.com/demos/sample-videos/small.ogv type=video/ogg>
+                    <source src=http://techslides.com/demos/sample-videos/small.mp4 type=video/mp4>
+                    <source src=http://techslides.com/demos/sample-videos/small.3gp type=video/3gp>
+                </video>
+                <ul class="controls">
+                    <li>
+                        <button class="playpause" type="button">
+                            <i class="fa fa-play" aria-hidden="true"></i>
+                            <i class="fa fa-pause hidden" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="stop" type="button">
+                            <i class="fa fa-stop" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li class="progress-wrapper">
+                        <progress class="progress" value="0" min="0">
+                            <span class="progress-bar"></span>
+                        </progress>
+                    </li>
+                    <li>
+                        <button class="mute" type="button">
+                            <i class="fa fa-volume-off" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="volinc" type="button">
+                            <i class="fa fa-volume-up" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="voldec" type="button">
+                            <i class="fa fa-volume-down" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button class="fs" type="button">
+                            <i class="fa fa-expand" aria-hidden="true"></i>
+                            <i class="fa fa-compress hidden" aria-hidden="true"></i>
+                        </button>
+                    </li>
+                </ul>
+            </figure>
         </article>
     </section>
     <aside>
