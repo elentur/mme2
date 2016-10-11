@@ -1,0 +1,46 @@
+header,main,footer{
+    width:900px;
+    margin:0 auto;
+}
+
+section, aside{
+    float: left;
+}
+
+section{
+    width: 560px;
+}
+
+section article{
+    height: 50vh;
+}
+
+section article video {
+    display: block;
+    margin: 0 auto;
+}
+
+aside {
+    width: 315px;
+    margin-left: 25px;
+    position: relative;
+}
+aside nav{
+    margin-top: 40px;
+    position: fixed;
+    width: 315px;
+}
+
+/* fix for float */
+.group:before,
+.group:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+.group:after {
+    clear: both;
+}
+.group {
+    zoom: 1; /* For IE 6/7 (trigger hasLayout) */
+}
