@@ -36,7 +36,7 @@ section article figure .controls{
 }
 
 section article figure .controls.fullscreen{
-    width:500px;
+    width:480px;
     margin:0 auto;
     bottom: 1em;
     padding:10px;
@@ -53,6 +53,10 @@ section article figure .controls li button
     border: none;
     background-color: transparent;
     color: #fff;
+}
+
+section article figure .controls li progress{
+    width: 300px;
 }
 
 aside {
