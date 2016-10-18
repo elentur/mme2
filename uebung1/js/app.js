@@ -1,4 +1,4 @@
-window.addEventListener("load", function (event) {
+window.addEventListener("load", function () {
 
 
     var videos = document.getElementsByTagName("video");
