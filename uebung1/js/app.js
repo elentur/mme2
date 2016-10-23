@@ -4,14 +4,18 @@ window.addEventListener("load", function () {
     var videos = document.getElementsByTagName("video");
     for (var i = 0; i < videos.length; i++) {
         var video = videos[i]; // … find button objects and add listener … playButton.addEventListener("click", function (event) { video.play(); }); // … }
+        var div = document.createElement("div");
+        div.classList.add("controller");
         var btnPlay = document.createElement("button");
         var btnStop = document.createElement("button");
 
         btnPlay.innerHTML = "PLAY";
         btnStop.innerHTML = "STOP";
 
-        video.parentElement.appendChild(btnPlay);
-        video.parentElement.appendChild(btnStop);
+        div.appendChild(btnPlay);
+        div.appendChild(btnStop);
+
+        video.parentElement.appendChild(div);
 
         btnPlay.addEventListener("click", onPlay(video));
         btnStop.addEventListener("click", onStop(video, btnPlay));
