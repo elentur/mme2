@@ -1,3 +1,7 @@
+/*
+    general css
+*/
+
 html, body {
     padding: 0;
     margin: 0;
@@ -19,6 +23,15 @@ footer {
     padding: 20px;
 }
 
+.container {
+    padding: 0 50px;
+    margin: 0 auto;
+}
+
+/*
+    header css
+*/
+
 header h1 {
     font-weight: 900;
 }
@@ -27,10 +40,18 @@ header h1 .logo{
     color: #c4473d;
 }
 
+/*
+    main css
+*/
+
 main {
     display: flex;
     flex-direction: column;
 }
+
+/*
+    side-nav css
+*/
 
 nav {
     flex: 1 0;
@@ -69,6 +90,10 @@ nav ul li a:hover {
     text-decoration: underline;
 }
 
+/*
+    section css
+*/
+
 section {
     flex: 2 0;
     order: 2;
@@ -95,11 +120,6 @@ section {
     box-shadow: 1px 2px 3px  #888;
 }
 
-.container {
-    padding: 0 50px;
-    margin: 0 auto;
-}
-
 article {
     margin: 100px 0;
 }
@@ -107,6 +127,10 @@ article {
 video {
     width: 100%;
 }
+
+/*
+    controller-bar css
+*/
 
 .controller {
     padding: 10px 0;
@@ -134,12 +158,10 @@ video {
 }
 
 /*
-DESKTOP
+    DESKTOP View
 */
 
-/*
-Wenn das Fenster größer/gleich als 1000px wird, wird diese Regel angewendet
-*/
+/* Wenn das Fenster größer/gleich als 1000px wird, wird diese Regel angewendet */
 
 @media only screen and (min-width: 1000px){
     main {
