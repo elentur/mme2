@@ -68,7 +68,6 @@ function onPlay(video) {
             btnPlay.innerHTML = "PLAY";
         }
     }
-
 }
 
 /**
