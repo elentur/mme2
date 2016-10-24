@@ -1,5 +1,5 @@
 /**
- * this script generates out custom video control bar for each video on the website
+ * this script generates a custom video control bar for each video on the website
  */
 
 // load > wartet auch auf fertig geladene Bilder, während DOMContentLoaded nur auf die fertige HTML Seite wartet
@@ -36,7 +36,7 @@ function init() {
 
         // event-listener zu "play" und "stop" hinzufügen
         // wird sofort aufgerufen (auch vor dem klick)
-        // springe onPlay oder onStop, die wiederum anweisungen für das click-event enthält
+        // springe zu onPlay oder onStop, die wiederum anweisungen für das click-event enthält
         btnPlay.addEventListener("click", onPlay(video));
         btnStop.addEventListener("click", onStop(video, btnPlay));
 
