@@ -1,8 +1,8 @@
 {
-  "name": "mme2",
+  "name": "Evil Corp MME2 Uebung 2",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Unsere erste Node API mit Hello World Ausgabe",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git@cgmgit.beuth-hochschule.de:s59156/mme2.git"
   },
-  "author": "",
+  "author": "Marcus Bätz, Robert Dziuba, Inga Schwarze",
   "license": "ISC",
   "dependencies": {
     "express": "^4.14.0"
