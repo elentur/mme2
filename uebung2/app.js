@@ -2,25 +2,25 @@
  * Created by Inga Schwarze on 25.10.2016.
  */
 
+// use ECMA Script 5
 "use strict";
 
+// load express - framework loaded
 var express = require('express');
 var path = require('path');
 var fs = require('fs');
 var app = express();
 
 // add route to static files
+// dirname > path
+// redirect all requests which contain "public" to the direcotry "static"
 app.use("/public", express.static(path.join(__dirname, 'static')));
 
-app.get('/', function (req, res) {
 
-    res.send('<!DOCTYPE html>' +
-            '<html lang="en">' +
-            '<head><meta chatset="utf8"></head>' +
-            '<body><h1>Hello World!</h1></body>' +
-            '</html>');
-});
-
+/**
+ * localhost:3000/time shows actual system time as plain text
+ * "text/html" would show time as html text (default)
+ */
 app.get('/time', function (req, res) {
 
     res.contentType("text/plain");
@@ -36,20 +36,38 @@ app.get('/time', function (req, res) {
     res.send(datetime);
 });
 
+
+/**
+ * localhost:3000/file.txt shows content of file.txt and time (in ns) the server takes for loading asynchronously.
+ *
+ */
 app.get('/file.txt', function (req, res) {
-    var starttime = new Date().getTime();
-    var endtime;
+    var time = process.hrtime();
     fs.readFile("file.txt", "utf8", function (err, contents) {
-        endtime = new Date().getTime();
-        var timediff = endtime - starttime;
+        var diff = process.hrtime(time);
         res.contentType("text/plain");
-        res.send(contents + ' \nin ' + timediff + ' Nanosekunden');
+        res.send(contents + ' \nin ' + diff + ' Nanosekunden');
 
     })
 });
 
 
-// start server
+/**
+ * get needs parameter "/*" to ensure that every invocation of localhost/3000 concatenated with any
+ * characters gives back the hello world output
+ * this function has to be at the bottom of this js file because the regular expression "*" catches all request
+ * should only be parsed if all other requests are not parsed
+ */
+app.get('/*', function (req, res) {
+
+    res.send('<!DOCTYPE html>' +
+        '<html lang="en">' +
+        '<head><meta chatset="utf8"></head>' +
+        '<body><h1>Hello World!</h1></body>' +
+        '</html>');
+});
+
+// start server, output only in console now
 var server = app.listen(3000, function () {
     console.log('helloworld app is ready and listening at http://localhost:3000');
 });

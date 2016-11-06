@@ -1,7 +1,7 @@
 {
-  "name": "Evil Corp MME2 Uebung 2",
+  "name": "evilcorp",
   "version": "1.0.0",
-  "description": "Unsere erste Node API mit Hello World Ausgabe",
+  "description": "our first node api with a hello world output",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
