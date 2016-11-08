@@ -12,6 +12,7 @@ var express = require('express');
 var path = require('path');
 var fs = require('fs');
 var app = express();
+var text = undefined;
 
 // add route to static files
 // dirname > path
@@ -29,7 +30,7 @@ app.get('/time', function (req, res) {
 
     var currentdate = new Date();
     var datetime = "Last Sync: " + currentdate.getDate() + "/"
-        + (currentdate.getMonth()+1)  + "/"
+        + (currentdate.getMonth() + 1) + "/"
         + currentdate.getFullYear() + " @ "
         + currentdate.getHours() + ":"
         + currentdate.getMinutes() + ":"
@@ -45,12 +46,21 @@ app.get('/time', function (req, res) {
  */
 app.get('/file.txt', function (req, res) {
     var time = process.hrtime();
-    fs.readFile("file.txt", "utf8", function (err, contents) {
-        var diff = process.hrtime(time);
-        res.contentType("text/plain");
-        res.send(contents + ' \nin ' + diff + ' Nanosekunden');
+    if (text === undefined) {
+        fs.readFile("file.txt", "utf8", function (err, contents) {
+            var diff = process.hrtime(time);
+            res.contentType("text/plain");
+            text = contents;
+            console.log("test");
 
-    })
+            res.send('in ' + diff + ' Nanosekunden\n\n' + text);
+
+        });
+    } else {
+        var diff = process.hrtime(time);
+        res.send('in ' + diff + ' Nanosekunden\n\n' + text);
+    }
+
 });
 
 
