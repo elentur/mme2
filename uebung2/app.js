@@ -1,5 +1,7 @@
 /**
- * Created by Inga Schwarze on 25.10.2016.
+ * @author Marcus Bätz, Robert Dziuba & Inga Schwarze
+ * @description out first nodejs server with a "hello world" output
+ *
  */
 
 // use ECMA Script 5
@@ -13,7 +15,7 @@ var app = express();
 
 // add route to static files
 // dirname > path
-// redirect all requests which contain "public" to the direcotry "static"
+// redirect all requests which contain "public" to the directory "static"
 app.use("/public", express.static(path.join(__dirname, 'static')));
 
 
