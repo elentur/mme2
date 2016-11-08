@@ -51,12 +51,12 @@ app.get('/file.txt', function (req, res) {
             var diff = process.hrtime(time);
             res.contentType("text/plain");
             text = contents;
-            console.log("test");
 
             res.send('in ' + diff + ' Nanosekunden\n\n' + text);
 
         });
     } else {
+        res.contentType("text/plain");
         var diff = process.hrtime(time);
         res.send('in ' + diff + ' Nanosekunden\n\n' + text);
     }
@@ -70,7 +70,7 @@ app.get('/file.txt', function (req, res) {
  * this function has to be at the bottom of this js file because the regular expression "*" catches all request
  * should only be parsed if all other requests are not parsed
  */
-app.get('/*', function (req, res) {
+app.all('/*', function (req, res) {
 
     res.send('<!DOCTYPE html>' +
         '<html lang="en">' +
