@@ -24,6 +24,7 @@ var store = require('./blackbox/store.js');
 // creating the server application
 var app = express();
 
+
 // Middleware ************************************
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
@@ -66,8 +67,15 @@ app.use(function(req, res, next) {
 
 // Routes ***************************************
 
+/**
+ * TWEETS
+ */
 app.get('/tweets', function(req,res,next) {
-    res.json(store.select('tweets'));
+    var items = store.select('tweets');
+    var href = hrefMaker(req, "tweets", null);
+    var object = {href : href, items : items};
+
+    res.json(object);
 });
 
 app.post('/tweets', function(req,res,next) {
@@ -76,9 +84,22 @@ app.post('/tweets', function(req,res,next) {
     res.status(201).json(store.select('tweets', id));
 });
 
-
 app.get('/tweets/:id', function(req,res,next) {
-    res.json(store.select('tweets', req.params.id));
+    var tweet = store.select('tweets', req.params.id);
+    var likes = store.select('likes');
+
+    var tweet_likes = [];
+
+    for (var i = 0; i < likes.length; i++) {
+        var like = likes[i];
+        if (like.tweet_id === tweet.id) {
+            tweet_likes.push(like);
+        }
+    }
+
+    tweet.likes = tweet_likes;
+    tweet.href = hrefMaker(req, "tweets", tweet.id);
+    res.json(tweet);
 });
 
 app.delete('/tweets/:id', function(req,res,next) {
@@ -90,6 +111,95 @@ app.put('/tweets/:id', function(req,res,next) {
     store.replace('tweets', req.params.id, req.body);
     res.status(200).end();
 });
+
+/**
+ * USER
+ */
+
+app.get('/users', function(req,res,next) {
+    var items = store.select('users');
+    var href = hrefMaker(req, "users", null);
+    var object = {href : href, items : items};
+
+    res.json(object);
+});
+
+app.post('/users', function(req,res,next) {
+    var id = store.insert('users', req.body);
+    // set code 201 "created" and send the item back
+    res.status(201).json(store.select('users', id));
+});
+
+app.get('/users/:id', function(req,res,next) {
+    var user = store.select('users', req.params.id);
+    user.href = hrefMaker(req, "users", user.id);
+    res.json(user);
+});
+
+app.delete('/users/:id', function(req,res,next) {
+    store.remove('users', req.params.id);
+    res.status(200).end();
+});
+
+app.put('/users/:id', function(req,res,next) {
+    store.replace('users', req.params.id, req.body);
+    res.status(200).end();
+});
+
+/**
+ * LIKES
+ *
+ * Use REST Level 2
+ * --- no commands in body part
+ * --- Konzept der Navigation über Ressourcen URLs und Manipulation über HTTP Methoden
+ *
+ */
+
+// returns list with all likes
+
+app.get('/likes', function(req,res,next) {
+    var items = store.select('likes');
+    var href = hrefMaker(req, "likes", null);
+    var object = {href : href, items : items};
+
+    res.json(object);
+});
+
+app.post('/likes', function(req,res,next) {
+    var id = store.insert('likes', req.body);
+    // set code 201 "created" and send the item back
+    res.status(201).json(store.select('likes', id));
+});
+
+// Create Route for likes > resumes all input with /likes/id
+
+app.route('/likes/:id')
+    .get(function(req,res,next) {
+        var like = store.select('likes', req.params.id);
+        like.href = hrefMaker(req, "likes", like.id);
+        res.json(like);
+    })
+    .delete(function(req,res,next) {
+        store.remove('likes', req.params.id);
+        res.status(200).end();
+    })
+    .put(function(req,res,next) {
+        store.replace('likes', req.params.id, req.body);
+        res.status(200).end();
+    });
+
+/**
+ * Aus der Request Anfrage wird die passende URL als Attribut mit zurückgegeben
+ * @param req
+ * @param element
+ * @returns {string}
+ */
+function hrefMaker(req, ressource, id){
+    // http://localhost:3000/likes/(id), ansonsten für id = leerer String
+
+    return req.protocol + '://' + req.get('host') + "/"+ ressource + "/" + (id !== null ? id : "");
+}
+
 
 
 // TODO: add your routes etc.

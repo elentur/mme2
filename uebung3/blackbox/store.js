@@ -53,10 +53,22 @@ var users = [
     }
 ];
 
+var likes = [
+    {   id: globalCounter(),
+        user_id: 103,
+        tweet_id: 101
+    },
+    {   id: globalCounter(),
+        user_id: 104,
+        tweet_id: 101
+    }
+];
+
 // our "in memory database" is a simple object!
 var memory = {};
 memory.tweets = tweets;
 memory.users = users;
+memory.likes = likes;
 
 //** private helper functions */
 /**
