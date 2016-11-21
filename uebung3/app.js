@@ -77,6 +77,7 @@ app.get('/tweets', function (req, res, next) {
 app.post('/tweets', function (req, res, next) {
     push(res,req,"tweets");
 });
+
 // Create Route for tweets
 routing(app.route('/tweets/:id'), "tweets", "likes");
 
@@ -99,42 +100,43 @@ routing(app.route('/users/:id'), "users");
 /**
  * LIKES: our own ressource route with handler functions
  *
- * Use REST Level 2
- * --- no commands in body part
- * --- Konzept der Navigation über Ressourcen URLs und Manipulation über HTTP Methoden
+ * Represents REST Level 2
+ * --- different operation for different requests > different URL's
+ * --- concept of navigation with ressource URLs and manipulation by HTTP methods
  *
  */
-// alle likes auflisten
+// get all likes
 app.get('/likes', function (req, res, next) {
     get(res,req,"likes");
 });
-// neuen like anlegen > noch keine id vorhanden > hinzufügen
+// create new like > id not existing yet > add
 app.post('/likes', function (req, res, next) {
     push(res,req,"likes");
 });
 // Create Route for likes
 routing(app.route('/likes/:id'), "likes");
-// bestimmtes like auflisten
 
 /**
  * Routing organizes all entity calls
- * @param route the route object returnt from app.route()
+ * @param route the route object returned from app.route()
  * @param address the subaddress where route routes to as string
  * @param exp if the return value should be expanded or not
  */
+
+// for all requests that contain /id
 function routing(route, address, exp) {
     if (route === null || address === null) return;
     route.get(function (req, res, next) {
         var obj = store.select(address, req.params.id);
-        // href aufrufen, ressource und id übergeben
+
         if (exp !== undefined)expand(obj, exp, req);
         obj = hrefMaker(obj, req, address, obj.id + ((req.query.expand) ? "?expand=" + req.query.expand : ""));
         res.json(obj);
-    }) // löschen > Objekte können nur einzeln gelöscht werden
+    }) // delete > objects can only be deleted seperately
         .delete(function (req, res, next) {
             store.remove(address, req.params.id);
             res.status(200).end();
-        }) // ändern > id ist bekannt
+        }) // change > id is known
         .put(function (req, res, next) {
             store.replace(address, req.params.id, req.body);
             res.status(200).end();
@@ -147,26 +149,26 @@ function routing(route, address, exp) {
  * @param obj the subaddress where route routes to as string
  * @param attribute the attribute for expanding where route routes to as string
  */
-function get(res, req,obj, attribute) {
-    // array von allen objekten vom typ address aus der db
+function get(res, req, obj, attribute) {
+    // array of all objects with type address from database
     var items = store.select(obj);
-    // hrefMaker (URL) für jedes objekt setzen
+    // hrefMaker (URL) set for each object, id is null because we are not searching for a special address
     items = hrefMaker(items, req, obj, null);
     if (attribute !== undefined) {
 
-        // Schleife: alle objekte > für jedes objekt das jeweilige attribut holen
+        // loop: all objects > get the attribute for each object
         for (var i = 0; i < items.length; i++) {
 
             expand(items[i], attribute, req);
 
         }
     }
-    // das gesamte array als obj speichern, um dem kompletten array ein href zu geben
+    // save whole array as obj, to deliver a href for the array
     var obj = {};
 
     obj = hrefMaker(obj, req, obj, ((req.query.expand) ? "?expand=" + req.query.expand : ""));
     obj.items = items;
-    // items sind schon im obj enthalten und werden im json format zurückgegeben
+    // obj contains items > return in json format
     res.json(obj);
 }
 /**
@@ -181,51 +183,50 @@ function push(res,req,address){
     res.status(201).json(store.select(address, id));
 }
 /**
+ * tweets/?expand=likes
  * expand is a subroutine for expanding an attribute of an object
  * @param obj the object the attribute belongs to
- * @param attribute The attribute that has to be expand
+ * @param attribute The attribute that has to be expanded
  * @param req the Request object
  */
 function expand(obj, attribute, req) {
 
-    // zu dem einzelnen obj wird ein attribut angehangen
-
+    // add attribute to each obj
     obj[attribute] = {};
 
-    // abfrage, ob expand existiert und ob es unser attribute ist
+    // check if expand exists and if it is the needed attribute
     if (req.query.expand && req.query.expand.split(",").indexOf(attribute) > -1) {
-        // alle attribute eines objects holen
+        // get all attributes of an object > all likes of a tweet
         var attr_obj = expandLikes(obj.id);
 
-        // das array mit treffer-attributes wird unter attributes.items gespeichert
-        // jedes array element (attribute) bekommt seinen eindeutigen href zugewiesen
+        // every array element > attribute > like > gets his own distinct href
         obj[attribute].items = hrefMaker(attr_obj, req, attribute, null);
 
     }
-    // href für das gesamte attributes-array setzen
+    // set href for the whole attributes > likes array
     obj[attribute] = hrefMaker(obj[attribute], req, "tweets/" + obj.id + "/likes", null);
 }
 /**
- * Aus der Request Anfrage wird die passende URL als Attribut mit zurückgegeben
- * muss auf alle Get requests angewendet werden
+ * the request gets its fitting URL as attribute
+ * has to be called for all get requests
  * @param req
  * @param element
  * @returns {string}
  */
 function hrefMaker(objOrArr, req, ressource, id) {
-    // http://localhost:3000/likes/(id), ansonsten für id = leerer String
+    // http://localhost:3000/likes/(id), otherwise for id = empty String
     // host > localhost
-    // ressource > z.B. likes
+    // ressource > f.E. likes
 
 
-    // unterscheiden zwischen array und object
-    // if array: jedes element bekommt ein href
+    // differentiate between array and object
+    // if array: every element gets a href
     if (objOrArr instanceof Array) {
 
         for (var i = 0; i < objOrArr.length; i++) {
             objOrArr[i]["href"] = req.protocol + '://' + req.get('host') + "/" + ressource + "/" + objOrArr[i].id;
         }
-        // if object (only one element): unbekannt, ob man nach likes oder like/id sucht > id anhängen oder nicht
+        // if object (only one element): not clear, if likes oder like/id is wanted > either gets an id or not
     } else {
         objOrArr.href = req.protocol + '://' + req.get('host') + "/" + ressource + "/" + (id !== null ? id : "");
     }
@@ -240,14 +241,14 @@ function hrefMaker(objOrArr, req, ressource, id) {
  * @returns {Array} array of likes
  */
 function expandLikes(id) {
-    // alle likes likes in einem array speichern
+    // save all likes in one array
     var likes = store.select('likes');
 
-    // array für die speziellen likes eines bestimmten tweets
+    // array for special likes of a certain tweet
     var tweet_likes = [];
 
-    // for schleife durchläuft alle likes und überprüft, ob sie zu dem speziellen tweet gehören
-    // wenn ja, wird like zu tweet_likes hinzugefügt
+    // loop: run through all likes and check if they belong to the certain tweet
+    // if yes > put like to tweet like
     for (var i = 0; i < likes.length; i++) {
         var like = likes[i];
         if (like.tweet_id === id) {
