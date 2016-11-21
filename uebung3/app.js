@@ -106,11 +106,12 @@ app.get('/tweets', function (req, res, next) {
     }
 
     // das gesamte array als obj speichern, um dem kompletten array ein href zu geben
-    var obj = {items: items};
+    var obj = {};
 
     console.log(req.query);
 
     obj = hrefMaker(obj, req, "tweets", ((req.query.expand) ? "?expand=" + req.query.expand : ""));
+    obj.items= items;
 
     // items sind schon im obj enthalten und werden im json format zurückgegeben
     res.json(obj);
