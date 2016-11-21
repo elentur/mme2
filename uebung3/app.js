@@ -149,11 +149,11 @@ function routing(route, address, exp) {
  * @param obj the subaddress where route routes to as string
  * @param attribute the attribute for expanding where route routes to as string
  */
-function get(res, req, obj, attribute) {
+function get(res, req, address, attribute) {
     // array of all objects with type address from database
-    var items = store.select(obj);
+    var items = store.select(address);
     // hrefMaker (URL) set for each object, id is null because we are not searching for a special address
-    items = hrefMaker(items, req, obj, null);
+    items = hrefMaker(items, req, address, null);
     if (attribute !== undefined) {
 
         // loop: all objects > get the attribute for each object
@@ -166,7 +166,7 @@ function get(res, req, obj, attribute) {
     // save whole array as obj, to deliver a href for the array
     var obj = {};
 
-    obj = hrefMaker(obj, req, obj, ((req.query.expand) ? "?expand=" + req.query.expand : ""));
+    obj = hrefMaker(obj, req, address, ((req.query.expand) ? "?expand=" + req.query.expand : ""));
     obj.items = items;
     // obj contains items > return in json format
     res.json(obj);
