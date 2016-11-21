@@ -70,139 +70,31 @@ app.use(function (req, res, next) {
  * TWEETS
  */
 app.get('/tweets', function (req, res, next) {
-    // array von allen tweets aus der db
-    var items = store.select('tweets');
-    // hrefMaker (URL) für jeden tweet setzen
-    items = hrefMaker(items, req, "tweets", null);
 
-    // Schleife: alle tweets > für jeden tweet die jeweiligen likes holen
-    for (var i = 0; i < items.length; i++) {
-
-        // zu dem einzelnen tweet wird attribut likes angehangen als obj
-        items[i]['likes'] = {};
-
-        // abfrage, ob expand existiert
-        if (req.query.expand) {
-
-            // nehme String und mach ein Array daraus wenn es mit Komma getrennt ist
-            var expand = req.query.expand.split(",");
-
-            //wenn in unserem array ein like existiert, dann bekommen wir ein index größer -1
-            if(expand.indexOf('likes') > -1) {
-
-                // alle likes für den tweet holen
-                var tweet_likes = expandLikes(items[i]['id']);
-
-                // das array mit treffer-likes wird unter likes.items gespeichert
-                // jedes array element (like) bekommt seinen eindeutigen href zugewiesen
-                items[i]['likes']['items'] = hrefMaker(tweet_likes, req, "likes", null);
-            }
-
-        }
-        // returns http://localhost:3000/tweets/id/likes/
-        // href für das gesamte likes-array setzen
-        items[i]['likes'] = hrefMaker(items[i]['likes'], req, "tweets/" + items[i]['id'] + "/likes", null);
-
-    }
-
-    // das gesamte array als obj speichern, um dem kompletten array ein href zu geben
-    var obj = {};
-
-    console.log(req.query);
-
-    obj = hrefMaker(obj, req, "tweets", ((req.query.expand) ? "?expand=" + req.query.expand : ""));
-    obj.items= items;
-
-    // items sind schon im obj enthalten und werden im json format zurückgegeben
-    res.json(obj);
+    get(res,req,"tweets","likes");
 });
 
 app.post('/tweets', function (req, res, next) {
-    var id = store.insert('tweets', req.body);
-    // set code 201 "created" and send the item back
-    res.status(201).json(store.select('tweets', id));
+    push(res,req,"tweets");
 });
+// Create Route for tweets
+routing(app.route('/tweets/:id'), "tweets", "likes");
 
-
-app.get('/tweets/:id', function (req, res, next) {
-    // tweet mit der passenden id holen
-    var tweet = store.select('tweets', req.params.id);
-
-    // zu dem einzelnen tweet wird attribut likes angehangen als obj
-    tweet.likes = {};
-
-    // abfrage, ob expand existiert und ob es likes ist
-    if (req.query.expand) {
-
-        var expand = req.query.expand.split(",");
-
-        if(expand.indexOf('likes') > -1) {
-
-            // alle likes eines tweets holen
-            var tweet_likes = expandLikes(tweet.id);
-
-            // day array mit treffer-likes wird unter likes.items gespeichert
-            // jedes array element (like) bekommt seinen eindeutigen href zugewiesen
-            tweet.likes.items = hrefMaker(tweet_likes, req, "likes", null);
-        }
-
-    }
-    // returns http://localhost:3000/tweets/id/likes/
-    // href für das gesamte likes-array setzen
-    tweet.likes = hrefMaker(tweet.likes, req, "tweets/" + req.params.id + "/likes", null);
-
-    // link für den tweet setzen > nach tweet/id wurde gesucht
-    // wenn im request ein expand mitgeschickt wurde, wird er an den href hinzugefügt
-    tweet = hrefMaker(tweet, req, "tweets", tweet.id + ((req.query.expand) ? "?expand=" + req.query.expand: ""));
-
-    res.json(tweet);
-});
-
-app.delete('/tweets/:id', function (req, res, next) {
-    store.remove('tweets', req.params.id);
-    res.status(200).end();
-});
-
-app.put('/tweets/:id', function (req, res, next) {
-    store.replace('tweets', req.params.id, req.body);
-    res.status(200).end();
-});
 
 /**
  * USER
  */
 
 app.get('/users', function (req, res, next) {
-
-    var items = store.select('users');
-    items = hrefMaker(items, req, "users", null);
-    var obj = {items: items};
-    obj = hrefMaker(obj, req, "users", null);
-
-    res.json(obj);
+    get(res,req,"users");
 });
 
 app.post('/users', function (req, res, next) {
-    var id = store.insert('users', req.body);
-    // set code 201 "created" and send the item back
-    res.status(201).json(store.select('users', id));
+    push(res,req,"users");
 });
+// Create Route for users
+routing(app.route('/users/:id'), "users");
 
-app.get('/users/:id', function (req, res, next) {
-    var user = store.select('users', req.params.id);
-    user = hrefMaker(user, req, "users", user.id);
-    res.json(user);
-});
-
-app.delete('/users/:id', function (req, res, next) {
-    store.remove('users', req.params.id);
-    res.status(200).end();
-});
-
-app.put('/users/:id', function (req, res, next) {
-    store.replace('users', req.params.id, req.body);
-    res.status(200).end();
-});
 
 /**
  * LIKES: our own ressource route with handler functions
@@ -212,59 +104,107 @@ app.put('/users/:id', function (req, res, next) {
  * --- Konzept der Navigation über Ressourcen URLs und Manipulation über HTTP Methoden
  *
  */
-
-// returns list with all likes
-// dont need id field
-
-
 // alle likes auflisten
 app.get('/likes', function (req, res, next) {
-    // alle likes holen > array aus der db
-    var items = store.select('likes');
-
-    // alle likes haben keine id, deswegen null
-    items = hrefMaker(items, req, "likes", null);
-
-    // referenz zum array schaffen
-    var obj = {items: items};
-
-    // das ganze array mit href referenzieren
-    obj = hrefMaker(obj, req, "likes", null);
-
-    // json generates string
-    res.json(obj);
+    get(res,req,"likes");
 });
-
-
 // neuen like anlegen > noch keine id vorhanden > hinzufügen
 app.post('/likes', function (req, res, next) {
-    var id = store.insert('likes', req.body);
-    // set code 201 "created" and send the item back
-    res.status(201).json(store.select('likes', id));
+    push(res,req,"likes");
 });
-
-
-// Create Route for likes > resumes all input with /likes/id
-// avoid syntax mistakes
-
-app.route('/likes/:id')
+// Create Route for likes
+routing(app.route('/likes/:id'), "likes");
 // bestimmtes like auflisten
-    .get(function (req, res, next) {
-        var like = store.select('likes', req.params.id);
+
+/**
+ * Routing organizes all entity calls
+ * @param route the route object returnt from app.route()
+ * @param address the subaddress where route routes to as string
+ * @param exp if the return value should be expanded or not
+ */
+function routing(route, address, exp) {
+    if (route === null || address === null) return;
+    route.get(function (req, res, next) {
+        var obj = store.select(address, req.params.id);
         // href aufrufen, ressource und id übergeben
-        like = hrefMaker(like, req, "likes", like.id);
-        res.json(like);
-    }) // löschen > likes können nur einzeln gelöscht werden
-    .delete(function (req, res, next) {
-        store.remove('likes', req.params.id);
-        res.status(200).end();
-    }) // ändern > id ist bekannt
-    .put(function (req, res, next) {
-        store.replace('likes', req.params.id, req.body);
-        res.status(200).end();
-    });
+        if (exp !== undefined)expand(obj, exp, req);
+        obj = hrefMaker(obj, req, address, obj.id + ((req.query.expand) ? "?expand=" + req.query.expand : ""));
+        res.json(obj);
+    }) // löschen > Objekte können nur einzeln gelöscht werden
+        .delete(function (req, res, next) {
+            store.remove(address, req.params.id);
+            res.status(200).end();
+        }) // ändern > id ist bekannt
+        .put(function (req, res, next) {
+            store.replace(address, req.params.id, req.body);
+            res.status(200).end();
+        });
+}
+/**
+ * Get is called by all request for groups like user, tweets etc.
+ * @param res the respond object
+ * @param req the request object
+ * @param obj the subaddress where route routes to as string
+ * @param attribute the attribute for expanding where route routes to as string
+ */
+function get(res, req,obj, attribute) {
+    // array von allen objekten vom typ address aus der db
+    var items = store.select(obj);
+    // hrefMaker (URL) für jedes objekt setzen
+    items = hrefMaker(items, req, obj, null);
+    if (attribute !== undefined) {
 
+        // Schleife: alle objekte > für jedes objekt das jeweilige attribut holen
+        for (var i = 0; i < items.length; i++) {
 
+            expand(items[i], attribute, req);
+
+        }
+    }
+    // das gesamte array als obj speichern, um dem kompletten array ein href zu geben
+    var obj = {};
+
+    obj = hrefMaker(obj, req, obj, ((req.query.expand) ? "?expand=" + req.query.expand : ""));
+    obj.items = items;
+    // items sind schon im obj enthalten und werden im json format zurückgegeben
+    res.json(obj);
+}
+/**
+ * Push adds a new Object to the given resource group
+ * @param res the respond object
+ * @param req the request object
+ * @param address the subaddress where route routes to as string
+ */
+function push(res,req,address){
+    var id = store.insert(address, req.body);
+    // set code 201 "created" and send the item back
+    res.status(201).json(store.select(address, id));
+}
+/**
+ * expand is a subroutine for expanding an attribute of an object
+ * @param obj the object the attribute belongs to
+ * @param attribute The attribute that has to be expand
+ * @param req the Request object
+ */
+function expand(obj, attribute, req) {
+
+    // zu dem einzelnen obj wird ein attribut angehangen
+
+    obj[attribute] = {};
+
+    // abfrage, ob expand existiert und ob es unser attribute ist
+    if (req.query.expand && req.query.expand.split(",").indexOf(attribute) > -1) {
+        // alle attribute eines objects holen
+        var attr_obj = expandLikes(obj.id);
+
+        // das array mit treffer-attributes wird unter attributes.items gespeichert
+        // jedes array element (attribute) bekommt seinen eindeutigen href zugewiesen
+        obj[attribute].items = hrefMaker(attr_obj, req, attribute, null);
+
+    }
+    // href für das gesamte attributes-array setzen
+    obj[attribute] = hrefMaker(obj[attribute], req, "tweets/" + obj.id + "/likes", null);
+}
 /**
  * Aus der Request Anfrage wird die passende URL als Attribut mit zurückgegeben
  * muss auf alle Get requests angewendet werden
@@ -299,7 +239,7 @@ function hrefMaker(objOrArr, req, ressource, id) {
  * @param id- tweet id of a tweet
  * @returns {Array} array of likes
  */
-function expandLikes(id){
+function expandLikes(id) {
     // alle likes likes in einem array speichern
     var likes = store.select('likes');
 
