@@ -12,7 +12,7 @@
  * @author Johannes Konert
  * @licence  CC BY-SA 4.0
  *
- * @throws Error in methods if something went wrong
+ * @fires Error in methods if something went wrong
  * @module blackbox/store
  * @type {Object}
  */
@@ -27,50 +27,11 @@ var globalCounter = (function() {
 
 })();
 
-// some default store content
-var tweets = [
-    {   id: globalCounter(),
-        message: "Hello world tweet",
-        creator: {
-            href: "http://localhost:3000/users/103"
-        }
-    },
-    {   id: globalCounter(),
-        message: "Another nice tweet",
-        creator: {
-            href: "http://localhost:3000/users/104"
-        }
-    }
-];
-var users = [
-    {   id: globalCounter(),
-        firstname: "Super",
-        lastname: "Woman"
-    },
-    {   id: globalCounter(),
-        firstname: "Jane",
-        lastname: "Doe"
-    }
-];
-
-var likes = [
-    {   id: globalCounter(),
-        user_id: 103,
-        tweet_id: 101
-    },
-    {   id: globalCounter(),
-        user_id: 104,
-        tweet_id: 101
-    }
-];
-
 // our "in memory database" is a simple object!
 var memory = {};
-memory.tweets = tweets;
-memory.users = users;
-memory.likes = likes;
+// some default store content could be added here
 
-//** private helper functions */
+//** private helper functions
 /**
  *  Checks given element for being an object
  * @param element
@@ -116,10 +77,10 @@ var store = {
     },
 
 
-    /** Inserts an element into the list of type and adds an .id to it
+    /** Inserts an element into the list of type
      *
      * @param {string} type
-     * @param {object} element (without an .id property)
+     * @param {object} element
      * @returns {Number} the new id of the inserted element as a Number
      */
     insert: function(type, element) {
@@ -139,7 +100,6 @@ var store = {
      * @param {string} type
      * @param {string} id
      * @param {object} newElement  needs to have .id property of same value as id
-     * @throws Error in case element cannot be found or id and .id are not the same
      * @returns {this} the store object itself for pipelining
      */
     replace: function(type, id, newElement) {
@@ -150,7 +110,7 @@ var store = {
             throw new Error('element with id '+id+' does not exist in store type '+type, newElement);
         }
         id = parseInt(id);
-        // now getRessources the index of the element
+        // now get the index of the element
         memory[type].forEach(function(item, i) {
             if (item.id === id) {
                 index = i;
@@ -170,7 +130,6 @@ var store = {
      *
      * @param {string} type
      * @param {Number} id numerical id of element to remove
-     * @throws Error if element cannot be found in store
      * @returns {this} store object itself for pipelining
      */
     remove: function(type, id) {
@@ -180,7 +139,7 @@ var store = {
             throw new Error('element with id '+id+' does not exist in store type '+type);
         }
         id = parseInt(id);
-        // now getRessources the index of the element
+        // now get the index of the element
         memory[type].forEach(function(item, i) {
             if (item.id === id) {
                 index = i;
