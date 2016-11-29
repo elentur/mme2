@@ -6,7 +6,7 @@
   "description": "Initial code set for exercise 4 (implementing an REST API after designed mocha tests)",
   "private": true,
   "scripts": {
-    "start": "cross-env NODE_ENV=development DEBUG=me2u4:* node app.js",
+    "start": "cross-env NODE_ENV=development DEBUG=me2u4:* nodemon app.js",
     "test": "mocha"
   },
   "dependencies": {

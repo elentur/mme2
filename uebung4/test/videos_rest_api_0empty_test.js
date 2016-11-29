@@ -14,9 +14,9 @@
  */
 "use strict";
 
-var should = require('should');
-require('should-http');
-var request = require('supertest');
+var should = require('should');
+require('should-http');
+var request = require('supertest');
 var cfg = require('./config_for_tests');
 
 var baseURL = cfg.baseURL; // please change it in file config_for_tests.js

@@ -7,9 +7,9 @@
  */
 "use strict";
 
-var should = require('should');
-require('should-http');
-var request = require('supertest');
+var should = require('should');
+require('should-http');
+var request = require('supertest');
 var cfg = require('./config_for_tests');
 
 var baseURL = cfg.baseURL; // please change it in file config_for_tests.js
@@ -23,7 +23,7 @@ var videoCorrectMin = cfg.videoCorrectMin;
 var videoCorrectMax = cfg.videoCorrectMax;
 
 // start of tests ********************************************************************************
-describe.skip('Task 1.a CRUD', function() {
+describe('Task 1.a CRUD', function() {
     var videoCorrect1Result = null;
     var videoCorrect2Result = null;
     var videoIDsCleanup = [];
