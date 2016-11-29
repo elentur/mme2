@@ -71,7 +71,9 @@ app.use(function (req, res, next) {
  */
 app.get('/tweets', function (req, res, next) {
 
-    get(res,req,"tweets","likes");
+    // used for tweets, users, likes >
+    // combinedRessource is defined > likes
+    getRessources(res,req,"tweets","likes");
 });
 
 app.post('/tweets', function (req, res, next) {
@@ -87,7 +89,8 @@ routing(app.route('/tweets/:id'), "tweets", "likes");
  */
 
 app.get('/users', function (req, res, next) {
-    get(res,req,"users");
+    // combinedRessouce is undefined > no setCombinedRessource
+    getRessources(res,req,"users");
 });
 
 app.post('/users', function (req, res, next) {
@@ -105,9 +108,9 @@ routing(app.route('/users/:id'), "users");
  * --- concept of navigation with ressource URLs and manipulation by HTTP methods
  *
  */
-// get all likes
+// getRessources all likes
 app.get('/likes', function (req, res, next) {
-    get(res,req,"likes");
+    getRessources(res,req,"likes");
 });
 // create new like > id not existing yet > add
 app.post('/likes', function (req, res, next) {
@@ -118,97 +121,124 @@ routing(app.route('/likes/:id'), "likes");
 
 /**
  * Routing organizes all entity calls
+ * avoid syntax mistakes
+ * for get, delete and put (not push, because it needs list)
  * @param route the route object returned from app.route()
- * @param address the subaddress where route routes to as string
- * @param exp if the return value should be expanded or not
+ * @param ressource the subaddress where route routes to as string
+ * @param combineRessource if the return value should be expanded or not
  */
-
 // for all requests that contain /id
-function routing(route, address, exp) {
-    if (route === null || address === null) return;
+function routing(route, ressource, combineRessource) {
+    // default control > cancle method
+    if (route === null || ressource === null) return;
     route.get(function (req, res, next) {
-        var obj = store.select(address, req.params.id);
 
-        if (exp !== undefined)expand(obj, exp, req);
-        obj = hrefMaker(obj, req, address, obj.id + ((req.query.expand) ? "?expand=" + req.query.expand : ""));
+        // obj captures one elemenet, f.E. tweet with id 101
+        var obj = store.select(ressource, req.params.id);
+
+        // check if combinedRessource is available > set combinedRessource
+        if (combineRessource !== undefined) setCombinedRessource(obj, combineRessource, req);
+
+        // f.E. set href for single tweet_id
+        obj = hrefMaker(obj, req, ressource, obj.id + ((req.query.expand) ? "?expand=" + req.query.expand : ""));
         res.json(obj);
     }) // delete > objects can only be deleted seperately
         .delete(function (req, res, next) {
-            store.remove(address, req.params.id);
+            store.remove(ressource, req.params.id);
             res.status(200).end();
         }) // change > id is known
         .put(function (req, res, next) {
-            store.replace(address, req.params.id, req.body);
+            store.replace(ressource, req.params.id, req.body);
             res.status(200).end();
         });
 }
 /**
- * Get is called by all request for groups like user, tweets etc.
+ * > gets ressource
+ * > sets href for each element
+ * > is there a combined ressource
+ * > sets href for array
+ * > formats the output
+ * GetRessources is called by all request for groups like user, tweets etc.
  * @param res the respond object
  * @param req the request object
  * @param obj the subaddress where route routes to as string
- * @param attribute the attribute for expanding where route routes to as string
+ * @param combineRessource the combineRessource for expanding where route routes to as strin
  */
-function get(res, req, address, attribute) {
-    // array of all objects with type address from database
-    var items = store.select(address);
-    // hrefMaker (URL) set for each object, id is null because we are not searching for a special address
-    items = hrefMaker(items, req, address, null);
-    if (attribute !== undefined) {
+function getRessources(res, req, ressource, combineRessource) {
+    // array of all objects with type ressource from database
+    var items = store.select(ressource);
+    // hrefMaker (URL) set for each object, id is null because we are not searching for a special ressource
+    // href maker runs through all specific elements of a ressource
+    items = hrefMaker(items, req, ressource, null)
+    // is there a combined ressource? > likes
+    if (combineRessource !== undefined) {
 
-        // loop: all objects > get the attribute for each object
+        // loop: all objects (tweets) > getRessources the combineRessource for each object
         for (var i = 0; i < items.length; i++) {
 
-            expand(items[i], attribute, req);
-
+            setCombinedRessource(items[i], combineRessource, req);
         }
     }
+    // set href for whole array (ressource)
     // save whole array as obj, to deliver a href for the array
     var obj = {};
 
-    obj = hrefMaker(obj, req, address, ((req.query.expand) ? "?expand=" + req.query.expand : ""));
+    // call hrefMaker for whole array (ressource)
+    // instead of id > add setCombinedRessource if it exists
+    obj = hrefMaker(obj, req, ressource, ((req.query.expand) ? "?expand=" + req.query.expand : ""));
+    // put array in items
     obj.items = items;
     // obj contains items > return in json format
     res.json(obj);
 }
 /**
+ * push contains list > cannot be applied to routing function
  * Push adds a new Object to the given resource group
  * @param res the respond object
  * @param req the request object
- * @param address the subaddress where route routes to as string
+ * @param ressource the subaddress where route routes to as string
  */
-function push(res,req,address){
-    var id = store.insert(address, req.body);
+function push(res,req,ressource){
+    // generate new entry and id
+    var id = store.insert(ressource, req.body);
     // set code 201 "created" and send the item back
-    res.status(201).json(store.select(address, id));
+    res.status(201).json(store.select(ressource, id));
 }
 /**
- * tweets/?expand=likes
- * expand is a subroutine for expanding an attribute of an object
- * @param obj the object the attribute belongs to
- * @param attribute The attribute that has to be expanded
+ * set href for combined ressource
+ * method is only called if there is a combinedRessource
+ * tweets/?setCombinedRessource=likes
+ * singleRessource > single tweet
+ * setCombinedRessource is a subroutine for expanding an combinedRessource of an object
+ * @param singleRessource the object the combinedRessource belongs to
+ * @param combinedRessource The combinedRessource that has to be expanded
  * @param req the Request object
  */
-function expand(obj, attribute, req) {
+function setCombinedRessource(singleRessource, combinedRessource, req) {
 
-    // add attribute to each obj
-    obj[attribute] = {};
+    // add combinedRessource to each singleRessource
+    // > tweets.likes > key added to the single ressource
+    singleRessource[combinedRessource] = {};
 
-    // check if expand exists and if it is the needed attribute
-    if (req.query.expand && req.query.expand.split(",").indexOf(attribute) > -1) {
-        // get all attributes of an object > all likes of a tweet
-        var attr_obj = expandLikes(obj.id);
+    // check if expand exists in URL > did user set expand?
+    // does expand contain our combinedRessource > likes?
+    // split generates array in different indexe
+    if (req.query.expand && req.query.expand.split(",").indexOf(combinedRessource) > -1) {
+        // getRessources all attributes of an object > all likes of a tweet
+        // getAllLikesForOneTweet gets tweet id
+        var likes = getAllLikesForOneTweet(singleRessource.id);
 
-        // every array element > attribute > like > gets his own distinct href
-        obj[attribute].items = hrefMaker(attr_obj, req, attribute, null);
-
+        // every array element > combinedRessource > like > gets his own distinct href
+        // all likes get href
+        singleRessource[combinedRessource].items = hrefMaker(likes, req, combinedRessource, null);
     }
+
     // set href for the whole attributes > likes array
-    obj[attribute] = hrefMaker(obj[attribute], req, "tweets/" + obj.id + "/likes", null);
+    singleRessource[combinedRessource] = hrefMaker(singleRessource[combinedRessource], req, "tweets/" + singleRessource.id + "/" + combinedRessource, null);
 }
 /**
  * the request gets its fitting URL as attribute
- * has to be called for all get requests
+ * has to be called for all getRessources requests
  * @param req
  * @param element
  * @returns {string}
@@ -240,7 +270,7 @@ function hrefMaker(objOrArr, req, ressource, id) {
  * @param id- tweet id of a tweet
  * @returns {Array} array of likes
  */
-function expandLikes(id) {
+function getAllLikesForOneTweet(id) {
     // save all likes in one array
     var likes = store.select('likes');
 

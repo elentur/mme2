@@ -150,7 +150,7 @@ var store = {
             throw new Error('element with id '+id+' does not exist in store type '+type, newElement);
         }
         id = parseInt(id);
-        // now get the index of the element
+        // now getRessources the index of the element
         memory[type].forEach(function(item, i) {
             if (item.id === id) {
                 index = i;
@@ -180,7 +180,7 @@ var store = {
             throw new Error('element with id '+id+' does not exist in store type '+type);
         }
         id = parseInt(id);
-        // now get the index of the element
+        // now getRessources the index of the element
         memory[type].forEach(function(item, i) {
             if (item.id === id) {
                 index = i;
