@@ -27,55 +27,98 @@ var internalKeys = {id: 'number', timestamp: 'number'};
 
 // routes **********************
 
+// Route input without id
 videos.route('/')
     .get(function (req, res, next) {
-        res.status(200).json(store.select("videos"));
-        next();
+        var videos = store.select("videos");
+        if (!videos) {
+            var err = new Error("no videos found");
+            err.status = 404;
+            next(err);
+        } else {
+            res.status(200).json(videos).end();
+        }
     })
     .post(function (req, res, next) {
-
-
-        var err = validateSchema(req.body);
+        var err = validateSchema(req.body, false);
         if (err) {
             next(err);
         } else {
             var obj = cleanObject(req.body);
             var id = store.insert("videos", obj);
-            res.status(201).json(store.select("videos", id));
-            next();
+            res.status(201).json(store.select("videos", id)).end();
         }
-
-
-
-    });
-videos.route('/:id')
-    .get(function (req, res, next) {
-
-        res.status(404).json("{}");
-        next();
     })
     .put(function (req, res, next) {
-        // TODO
-        next();
+        var error = new Error("method is not allowed here!");
+        error.status = 405;
+        next(error);
     })
     .delete(function (req, res, next) {
-        // TODO
-        next();
+        var error = new Error("method is not allowed here!");
+        error.status = 405;
+        next(error);
+    });
+// Route for get, put & delete for id input
+videos.route('/:id')
+    .get(function (req, res, next) {
+        var video = store.select("videos", req.params.id);
+        if(!video) {
+            var err = new Error("video not found");
+            err.status = 404;
+            next(err);
+        } else {
+            res.status(200).json(video).end();
+        }
+    }) // change whole video-objekt
+    .put(function (req, res, next) {
+
+        var err = validateSchema(req.body, true);
+        if (err) {
+            next(err);
+        } else {
+            var obj = cleanObject(req.body);
+            obj.id = req.params.id;
+            try {
+                store.replace("videos", req.params.id, obj);
+                res.status(200);
+                next();
+            } catch (e) {
+                console.log(e);
+                var err = new Error(e.message);
+                err.status = 404;
+                next(err);
+            }
+        }
+    })
+    .delete(function (req, res, next) {
+        try {
+            store.remove("videos", req.params.id);
+            res.status(204);
+            next();
+        } catch(e) {
+            var err = new Error("no video found with requested id");
+            err.status = 404;
+            next(err);
+        }
+    })
+    .post(function (req, res, next) {
+        var error = new Error("method is not allowed here!");
+        error.status = 405;
+        next(error);
     });
 
 
 
+function validateSchema(body, put) {
+    // TODO: Error Status ändern?
 
-
-function validateSchema(body) {
-
-    // default description setzen, falls undefined
-    body.description = body.description || "";
-    body.playcount = body.playcount || 0;
-    body.ranking = body.ranking || 0;
-
-    if (body.id) {
+    if (body.id && !put) {
         var error = new Error("id must not be set!");
+        error.status = 400;
+        return error;
+    } else if (!body.id){
+        var error = new Error("id must be set for put operation!");
         error.status = 400;
         return error;
     }
@@ -99,8 +142,12 @@ function validateSchema(body) {
         error.status = 400;
         return error;
     }
-    if (body.timestamp) {
+    if (body.timestamp && !put) {
         var error = new Error("timestamp must not be set!");
+        error.status = 400;
+        return error;
+    }else if(put && (!body.timestamp) || (typeof body.timestamp != "number") || (body.timestamp < 0)){
+        var error = new Error("timestamp must be set and has to be a number!");
         error.status = 400;
         return error;
     }
@@ -120,12 +167,18 @@ function validateSchema(body) {
 
 function cleanObject(body) {
 
+    // default description setzen, falls undefined
+    body.description = body.description || "";
+    body.playcount = body.playcount || 0;
+    body.ranking = body.ranking || 0;
+    body.timestamp = body.timestamp || Date.now();
+
     return {
         title: body.title,
         description: body.description,
         src: body.src,
         length: body.length,
-        timestamp: Date.now(),
+        timestamp: body.timestamp,
         playcount: body.playcount,
         ranking: body.ranking
     };

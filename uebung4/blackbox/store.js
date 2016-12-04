@@ -27,8 +27,35 @@ var globalCounter = (function() {
 
 })();
 
+
+var videos = [
+    {
+        id : globalCounter(),
+        title : "tolles video",
+        description: "beschreibung unseres tollen videos",
+        src : "http://localhost/3000/videos",
+        length: 500,
+        timestamp: Date.now(),
+        playcount: 20,
+        ranking: 10
+
+    },
+    {
+        id : globalCounter(),
+        title : "neues video",
+        description: "beschreibung unseres neuen videos",
+        src : "http://localhost/3000/videos",
+        length: 400,
+        timestamp: Date.now(),
+        playcount: 30,
+        ranking: 7
+    }
+];
+
+
 // our "in memory database" is a simple object!
 var memory = {};
+memory.videos = videos;
 // some default store content could be added here
 
 //** private helper functions

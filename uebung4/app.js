@@ -90,6 +90,8 @@ if (app.get('env') === 'development') {
         });
     });
 }
+
+
 // Start server ****************************
 app.listen(3000, function(err) {
     if (err !== undefined) {
