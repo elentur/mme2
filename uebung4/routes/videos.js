@@ -32,10 +32,9 @@ videos.route('/')
     .get(function (req, res, next) {
         var videos = store.select("videos");
         if (!videos) {
-            var err = new Error("no videos found");
-            err.status = 404;
-            next(err);
-        } else {
+            res.status(204).json().end();
+        } else if (videos.length > 0){
+            videos = filter(videos, req.params.filter);
             res.status(200).json(videos).end();
         }
     })
@@ -77,14 +76,12 @@ videos.route('/:id')
         if (err) {
             next(err);
         } else {
-            var obj = cleanObject(req.body);
+            var obj = cleanObject(req.body, true);
             obj.id = req.params.id;
             try {
                 store.replace("videos", req.params.id, obj);
-                res.status(200);
-                next();
+                res.status(200).json(obj).end();
             } catch (e) {
-                console.log(e);
                 var err = new Error(e.message);
                 err.status = 404;
                 next(err);
@@ -117,7 +114,7 @@ function validateSchema(body, put) {
         var error = new Error("id must not be set!");
         error.status = 400;
         return error;
-    } else if (!body.id){
+    } else if (!body.id && put){
         var error = new Error("id must be set for put operation!");
         error.status = 400;
         return error;
@@ -146,7 +143,7 @@ function validateSchema(body, put) {
         var error = new Error("timestamp must not be set!");
         error.status = 400;
         return error;
-    }else if(put && (!body.timestamp) || (typeof body.timestamp != "number") || (body.timestamp < 0)){
+    }else if(put && (!body.timestamp || (typeof body.timestamp != "number") || (body.timestamp < 0))){
         var error = new Error("timestamp must be set and has to be a number!");
         error.status = 400;
         return error;
@@ -165,7 +162,7 @@ function validateSchema(body, put) {
 }
 
 
-function cleanObject(body) {
+function cleanObject(body, put) {
 
     // default description setzen, falls undefined
     body.description = body.description || "";
@@ -173,7 +170,8 @@ function cleanObject(body) {
     body.ranking = body.ranking || 0;
     body.timestamp = body.timestamp || Date.now();
 
-    return {
+    var obj =
+     {
         title: body.title,
         description: body.description,
         src: body.src,
@@ -183,8 +181,41 @@ function cleanObject(body) {
         ranking: body.ranking
     };
 
+    if(put) {
+        obj.id = body.id;
+    }
+
+    return obj;
 }
 
+
+function filter(obj, params) {
+
+
+
+    var filters = params.split(",");
+    if (!filters.length > 0) return obj;
+    if(typeof obj === "array") {
+        var filterArray = [];
+        obj.forEach(function(video){
+            var filterObj = {};
+            filters.forEach(function (filter) {
+                filterObj[filter] = video[filter];
+                filterArray.push(filterObj);
+            });
+        });
+
+        return filterArray;
+    } else {
+        var filterObj = {};
+        filters.forEach(function (filter) {
+            filterObj[filter] = obj[filter];
+        });
+        return filterObj;
+    }
+
+
+}
 
 
 // this middleware function can be used, if you like (or remove it)

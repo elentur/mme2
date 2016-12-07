@@ -55,7 +55,7 @@ var videos = [
 
 // our "in memory database" is a simple object!
 var memory = {};
-memory.videos = videos;
+//memory.videos = videos;
 // some default store content could be added here
 
 //** private helper functions
