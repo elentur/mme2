@@ -49,6 +49,86 @@ var videos = [
         timestamp: Date.now(),
         playcount: 30,
         ranking: 7
+    },
+    {
+        id : globalCounter(),
+        title : "video 3",
+        description: "beschreibung unseres neuen videos",
+        src : "http://localhost/3000/videos",
+        length: 400,
+        timestamp: Date.now(),
+        playcount: 30,
+        ranking: 7
+    },
+    {
+        id : globalCounter(),
+        title : "video 4",
+        description: "beschreibung unseres neuen videos",
+        src : "http://localhost/3000/videos",
+        length: 400,
+        timestamp: Date.now(),
+        playcount: 30,
+        ranking: 7
+    },
+    {
+        id : globalCounter(),
+        title : "video 5",
+        description: "beschreibung unseres neuen videos",
+        src : "http://localhost/3000/videos",
+        length: 400,
+        timestamp: Date.now(),
+        playcount: 30,
+        ranking: 7
+    },
+    {
+        id : globalCounter(),
+        title : "video 6",
+        description: "beschreibung unseres neuen videos",
+        src : "http://localhost/3000/videos",
+        length: 400,
+        timestamp: Date.now(),
+        playcount: 30,
+        ranking: 7
+    },
+    {
+        id : globalCounter(),
+        title : "video 7",
+        description: "beschreibung unseres neuen videos",
+        src : "http://localhost/3000/videos",
+        length: 400,
+        timestamp: Date.now(),
+        playcount: 30,
+        ranking: 7
+    },
+    {
+        id : globalCounter(),
+        title : "video 8",
+        description: "beschreibung unseres neuen videos",
+        src : "http://localhost/3000/videos",
+        length: 400,
+        timestamp: Date.now(),
+        playcount: 30,
+        ranking: 7
+    },
+    {
+        id : globalCounter(),
+        title : "video 9",
+        description: "beschreibung unseres neuen videos",
+        src : "http://localhost/3000/videos",
+        length: 400,
+        timestamp: Date.now(),
+        playcount: 30,
+        ranking: 7
+    },
+    {
+        id : globalCounter(),
+        title : "video 10",
+        description: "beschreibung unseres neuen videos",
+        src : "http://localhost/3000/videos",
+        length: 400,
+        timestamp: Date.now(),
+        playcount: 30,
+        ranking: 7
     }
 ];
 

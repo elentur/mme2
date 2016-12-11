@@ -10,7 +10,7 @@
 var should = require('should');
 require('should-http');
 var request = require('supertest');
-var cfg = require('./../config_for_tests');
+var cfg = require('./config_for_tests');
 
 var baseURL = cfg.baseURL; // please change it in file config_for_tests.js
 var videoURL = cfg.videoURL;
@@ -25,7 +25,7 @@ var videoCorrect3 = cfg.videoCorrect3;
 var videoCorrect4 = cfg.videoCorrect4;
 
 // start of tests ********************************************************************************
-describe.skip('Task 2.b Limits and Offset', function() {
+describe('Task 2.b Limits and Offset', function() {
     var videoResults = [];
     var totalResults = [];
     var total = 0;
