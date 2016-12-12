@@ -73,8 +73,8 @@ videos.route('/')
             'timestamp': [Date.now()]
         };
 
-        var obj = new Validator(roules)
-            .validate(req.body)
+        var obj = new Validator(req.body)
+            .validate(roules)
             .clean(defaults)
             .get();
 
@@ -135,8 +135,8 @@ videos.route('/:id')
         };
 
 
-        var obj = new Validator(roules)
-            .validate(req.body)
+        var obj = new Validator(req.body)
+            .validate(roules)
             .clean(defaults)
             .get();
 

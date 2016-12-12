@@ -1,30 +1,7 @@
 'use strict';
 
-var Validator = function (args) {
-
-    this.body = {};
-    this.roules = {};
-
-    var that = this;
-
-    for (var key in args) {
-
-        var roules = args[key].split("|");
-
-        if (roules.length <= 0) continue;
-
-        that.roules[key] = [];
-
-        roules.forEach(function (roule) {
-            if (typeof that[roule] === "function") {
-                that.roules[key].push(roule);
-            } else {
-                var err = new Error(roule + " is not a function");
-                err.status = 400;
-                throw err;
-            }
-        });
-    }
+var Validator = function (body) {
+    this.body = body;
 };
 
 Validator.prototype.required = function (key, value) {
@@ -59,15 +36,24 @@ Validator.prototype.positive = function (key, value) {
     }
 };
 
-Validator.prototype.validate = function (body) {
-    this.body = body;
+Validator.prototype.validate = function (rules) {
 
-    for (var key in this.roules) {
+    for (var key in rules) {
 
         var that = this;
 
-        this.roules[key].forEach(function (roule) {
-            that[roule](key, that.body[key]);
+        rules[key].split("|").forEach(function (rule) {
+
+            console.log(rule);
+
+            if (typeof that[rule] === "function") {
+                that[rule](key, that.body[key]);
+            } else {
+                var err = new Error(rule + " is not a function");
+                err.status = 400;
+                throw err;
+            }
+
         });
     }
 
