@@ -92,8 +92,8 @@ var videos = [
     },
     {
         id : globalCounter(),
-        title : "video 7",
-        description: "beschreibung unseres neuen videos",
+        title : "video 7 toll",
+        description: "beschreibung unseres neuen super videos",
         src : "http://localhost/3000/videos",
         length: 400,
         timestamp: Date.now(),
@@ -112,7 +112,7 @@ var videos = [
     },
     {
         id : globalCounter(),
-        title : "video 9",
+        title : "video 9 toll",
         description: "beschreibung unseres neuen videos",
         src : "http://localhost/3000/videos",
         length: 400,
@@ -122,8 +122,8 @@ var videos = [
     },
     {
         id : globalCounter(),
-        title : "video 10",
-        description: "beschreibung unseres neuen videos",
+        title : "video 10 toll",
+        description: "beschreibung unseres neuen super videos",
         src : "http://localhost/3000/videos",
         length: 400,
         timestamp: Date.now(),
@@ -135,7 +135,7 @@ var videos = [
 
 // our "in memory database" is a simple object!
 var memory = {};
-//memory.videos = videos;
+memory.videos = videos;
 // some default store content could be added here
 
 //** private helper functions

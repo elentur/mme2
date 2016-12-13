@@ -20,13 +20,7 @@ var Optimizer = require('../utils/optimizer');
 var Validator = require('../utils/validator');
 var Search = require('../utils/search');
 
-
 var videos = express.Router();
-
-// if you like, you can use this for task 1.b:
-var requiredKeys = {title: 'string', src: 'string', length: 'number'};
-var optionalKeys = {description: 'string', playcount: 'number', ranking: 'number'};
-var internalKeys = {id: 'number', timestamp: 'number'};
 
 
 // routes **********************
@@ -96,6 +90,10 @@ videos.route('/')
         error.status = 405;
         next(error);
     });
+
+
+
+
 // Route for get, put & delete for id input
 videos.route('/:id')
     .get(function (req, res, next) {
@@ -194,6 +192,9 @@ videos.route('/:id')
         error.status = 405;
         next(error);
     });
+
+
+
 
 // this middleware function can be used, if you like (or remove it)
 videos.use(function (req, res, next) {

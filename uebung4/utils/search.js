@@ -1,6 +1,7 @@
 /**
  * Created by Inga Schwarze on 11.12.2016.
  */
+
 // items = videos
 // except = array mit namen, die wir nicht kontrollieren wollen
 
@@ -11,15 +12,19 @@ var Search = function(items, except){
 };
 
 
-
+/**
+ * Funktion die Videos nach gesuchten Parametern filtert
+ * @param searchTerms - Objekt in JSON Schreibweise mit key/value Paaren aus der URL-Anfrage
+ * @returns {Search}
+ */
 Search.prototype.searching = function (searchTerms) {
 
-    console.log(searchTerms);
-    // Objekt searchTerms wird durchlaufen > req.query = {filter : "sfdsfdsf", title : "dadsadsadsad"}
+    // Objekt searchTerms wird durchlaufen > req.query = {description : "sfdsfdsf", title : "dadsadsadsad"}
     // searchTerm = z.B. filter oder title
     for(var searchTerm in searchTerms) {
 
         // wenn except suchterm enthält, wird nicht weiter kontrolliert
+        // filter, offset und limit wird nicht durchsucht
         if(this.except.indexOf(searchTerm) > -1) continue;
 
         // jedes Video wird durchlaufen und auf searchTerm durchsucht
@@ -28,6 +33,7 @@ Search.prototype.searching = function (searchTerms) {
             var item = this.items[i];
             if(item[searchTerm]) {
                 // check, ob Wert im Video den Suchterm nicht enthält (video.description enthält z.B. "toll"?)
+                // Wenn Wert im Video nicht im Suchwert enthalten ist > ausschneiden
                 if(typeof item[searchTerm] == 'string' && !item[searchTerm].includes(searchTerms[searchTerm])){
                     // rausschneiden, was nicht in Suchanfrage enthalten ist
                     // splice ändert direkt das Array, muss nicht mehr neu gespeichert werden
@@ -37,6 +43,7 @@ Search.prototype.searching = function (searchTerms) {
                     this.items.splice(i,1);
                 }
 
+                // wenn der key nicht als video attribut existiert, wird ein Fehler ausgegeben
             } else {
                 var error = new Error(searchTerm + " does not exist in the ressource!");
                 error.status = 400;
