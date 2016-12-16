@@ -15,33 +15,45 @@
 // modules
 var express = require('express');
 var logger = require('debug')('me2u5:videos');
+var codes = require('statuses');
 
 // TODO add here your require for your own model file
 
 var videos = express.Router();
 
+var mongoose = require('mongoose');
+var db = mongoose.connect('mongodb://localhost:27017/me2');
+var VideoModel = require('../models/video');
+
 
 // routes **********************
 videos.route('/')
-    .get(function(req, res, next) {
-        // TODO replace store and use mongoose/MongoDB
-        // res.locals.items = store.select('videos');
-        res.locals.processed = true;
-        next();
-    })
-    .post(function(req,res,next) {
-        req.body.timestamp = new Date().getTime();
-        // TODO replace store and use mongoose/MongoDB
-        // var id = store.insert(storeKey, req.body);
+    .get(function (req, res, next) {
 
-        res.status(201);
-
-        // TODO replace store and use mongoose/MongoDB
-        // res.locals.items = store.select(storeKey, id);
-        res.locals.processed = true;
-        next();
+        VideoModel.find({}, function (err, items) {
+            res.status(201).json(items);
+        });
     })
-    .all(function(req, res, next) {
+    .post(function (req, res, next) {
+
+        delete req.body._id;
+        delete req.body.__v;
+
+        var video = new VideoModel(req.body);
+
+        video.save(function (err) {
+            if (!err) {
+                res.status(201).json(video);
+            }
+            else {
+                /*console.log(err);
+                 err.status = 400;
+                 err.message += ' in fields: ' + Object.getOwnPropertyNames(err.errors);*/
+                next(err);
+            }
+        });
+    })
+    .all(function (req, res, next) {
         if (res.locals.processed) {
             next();
         } else {
@@ -53,52 +65,90 @@ videos.route('/')
     });
 
 videos.route('/:id')
-    .get(function(req, res,next) {
-        // TODO replace store and use mongoose/MongoDB
-        // res.locals.items = store.select('videos', req.params.id);
-        res.locals.processed = true;
-        next();
+    .get(function (req, res, next) {
+        VideoModel.findById(req.params.id, function (err, video) {
+            if (!err) {
+                res.status(201).json(video);
+            } else {
+                next(err);
+            }
+        });
     })
-    .put(function(req, res,next) {
-        var id = parseInt(req.params.id);
-        if (id === req.body.id) {
-            // TODO replace store and use mongoose/MongoDB
-            // store.replace(storeKey, req.body.id, req.body);
-            res.status(200);
-            res.locals.items = store.select(storeKey, id);
-            res.locals.processed = true;
-            next();
-        }
-        else {
-            var err = new Error('id of PUT resource and send JSON body are not equal ' + req.params.id + " " + req.body.id);
+    .put(function (req, res, next) {
+
+        if (req.params.id == req.body._id) {
+
+            VideoModel.findById(req.params.id, function (err, video) {
+                if (err) {
+                    next(err);
+                } else {
+
+                    console.log(video);
+
+                    if (video) {
+
+                        Object.keys(VideoModel.schema.paths).forEach(function (key) {
+                            video[key] = req.body[key];
+                        });
+
+                        delete req.body._id;
+                        delete req.body.__v;
+
+                        var newVideo = new VideoModel(video);
+
+                        newVideo.save(function (err) {
+                            if (err) {
+                                next(err);
+                            } else {
+                                res.status(201).json(newVideo);
+                            }
+                        });
+                    }else{
+                        var err = new Error('No video found with id ' + req.params.id);
+                        err.status = 401;
+                        next(err);
+                    }
+                }
+            });
+        } else {
+            var err = new Error('id of PUT resource and send JSON body are not equal ' + req.params.id + " " + req.body._id);
             err.status = codes.wrongrequest;
             next(err);
         }
     })
-    .delete(function(req,res,next) {
-        var id = parseInt(req.params.id);
-
-        // TODO replace store and use mongoose/MongoDB
-        // store.remove(storeKey, id);
-
-        // ...
-        //    var err = new Error('No element to delete with id ' + req.params.id);
-        //    err.status = codes.notfound;
-        //    next(err);
-        // ...
-        res.locals.processed = true;
-        next();
-
-
+    .delete(function (req, res, next) {
+        VideoModel.findByIdAndRemove(req.params.id,
+            function (err, item) {
+                if (!err) {
+                    res.status(201).json(item);
+                } else {
+                    next(err);
+                }
+            });
     })
-    .patch(function(req,res,next) {
-        // TODO replace these lines by correct code with mongoose/mongoDB
-        var err = new Error('Unimplemented method!');
-        err.status = 500;
-        next(err);
+    .patch(function (req, res, next) {
+        if (req.body.id && req.params.id != req.body.id) {
+            var err = new Error('id of PUT resource and send JSON body are not equal ' + req.params.id + " " + req.body.id);
+            err.status = codes.wrongrequest;
+            next(err);
+
+        } else {
+
+            delete req.body._id;
+            delete req.body.__v;
+
+            VideoModel.findByIdAndUpdate(req.params.id, req.body, {new: true},
+                function (err, item) {
+                    if (!err) {
+                        res.status(201).json(item);
+                    } else {
+                        next(err);
+                    }
+                });
+        }
     })
 
-    .all(function(req, res, next) {
+    .all(function (req, res, next) {
         if (res.locals.processed) {
             next();
         } else {
@@ -112,7 +162,7 @@ videos.route('/:id')
 
 // this middleware function can be used, if you like or remove it
 // it looks for object(s) in res.locals.items and if they exist, they are send to the client as json
-videos.use(function(req, res, next){
+videos.use(function (req, res, next) {
     // if anything to send has been added to res.locals.items
     if (res.locals.items) {
         // then we send it as json and remove it
