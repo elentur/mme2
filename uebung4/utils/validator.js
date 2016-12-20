@@ -1,5 +1,6 @@
 /**
  * Created by Inga Schwarze on 11.12.2016.
+ * CHECK BODY FOR PUT & POST
  */
 
 var Validator = function(body){
@@ -138,6 +139,7 @@ Validator.prototype.positive = function (key, value) {
  * Getter von Videos > gibt validiertes Videos zurück > checkt ob alle Felder valide sind
  * @returns {*}
  */
+
 Validator.prototype.get = function () {
     return this.body;
 };

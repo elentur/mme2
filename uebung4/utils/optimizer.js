@@ -1,7 +1,7 @@
 /**
  * Created by Inga Schwarze on 11.12.2016.
- */
-/**
+ * CHECK URL ON GET REQUEST FOR /videos or /videos/id
+ *
  * Klasse Optimizer mit Konstruktor zur Übergabe von einem oder mehreren Videos
  * @param videoSource - Array von Videos oder einzelnes Video-Objekt
  * @constructor
@@ -22,9 +22,6 @@ Optimizer.prototype.filter = function(filterString) {
 
         // generate array from filterString
         var filters = filterString.split(",");
-
-        // leere Filter Arrays werden nicht durchlaufen
-        if(filters.length <= 0) return this;
 
         // soll ein video oder mehrere videos gefiltert werden? > videoSource = array?
         if (Array.isArray(this.videoSource)) {

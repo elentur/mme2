@@ -154,8 +154,9 @@ videos.route('/:id')
     // Bonusaufgabe: Patch einbinden mit nicht idempotentem Aufruf von playcount +1 (bei jedem Patch eins hochzählen)
     .patch(function (req, res, next) {
 
-        if (!req.body.playcount) {
-            var err = new Error("playcount is required!");
+        // Es darf nicht mehr als ein Attribut enthalten sein, playcount muss gesetzt sein, und es muss +1 enthalten
+        if (Object.keys(req.body).length > 1 || !req.body.playcount || req.body.playcount !== "+1") {
+            var err = new Error("playcount is required and can only contain the value '+1'!");
             err.status = 400;
             throw err;
         }
