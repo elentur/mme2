@@ -25,17 +25,49 @@ var mongoose = require('mongoose');
 var db = mongoose.connect('mongodb://localhost:27017/me2');
 var VideoModel = require('../models/video');
 
+var getFilterFields = function (filter) {
+
+    if (!filter) return {};
+
+    var filters = {}, fieldNotFound = false;
+
+    var fields = Object.keys(VideoModel.schema.paths);
+
+    filter.split(",").forEach(function (key) {
+
+        if (fields.indexOf(key) !== -1) {
+            filters[key] = true;
+        } else {
+            fieldNotFound = true
+        }
+    });
+
+    return fieldNotFound ? undefined : filters;
+};
+
 
 // routes **********************
 videos.route('/')
     .get(function (req, res, next) {
+        res.locals.processed = true;
 
-        VideoModel.find({}, function (err, items) {
-            res.status(201).json(items);
-        });
+        var filters = getFilterFields(req.query.filter);
+
+        console.log(req.query.limit);
+
+        if (!filters) {
+            var err = new Error("One of the fields in the filter does not exist!");
+            err.status = 400;
+            next(err);
+        } else {
+            VideoModel
+                .find({})
+                .skip( req.query.offset)
+                .limit(req.query.limit);
+        }
     })
     .post(function (req, res, next) {
-
+        res.locals.processed = true;
         delete req.body._id;
         delete req.body.__v;
 
@@ -43,7 +75,7 @@ videos.route('/')
 
         video.save(function (err) {
             if (!err) {
-                res.status(201).json(video);
+                res.status(201).json(video).end();
             }
             else {
                 /*console.log(err);
@@ -66,50 +98,56 @@ videos.route('/')
 
 videos.route('/:id')
     .get(function (req, res, next) {
-        VideoModel.findById(req.params.id, function (err, video) {
-            if (!err) {
-                res.status(201).json(video);
-            } else {
-                next(err);
-            }
-        });
-    })
-    .put(function (req, res, next) {
+        res.locals.processed = true;
 
-        if (req.params.id == req.body._id) {
+        var filters = getFilterFields(req.query.filter);
 
-            VideoModel.findById(req.params.id, function (err, video) {
-                if (err) {
-                    next(err);
+        if (!filters) {
+            var err = new Error("One of the fields in the filter does not exist!");
+            err.status = 400;
+            next(err);
+        } else {
+            VideoModel.findById(req.params.id, filters, function (err, video) {
+                if (!err) {
+                    res.status(201).json(video).end();
                 } else {
-
-                    console.log(video);
-
-                    if (video) {
-
-                        Object.keys(VideoModel.schema.paths).forEach(function (key) {
-                            video[key] = req.body[key];
-                        });
-
-                        delete req.body._id;
-                        delete req.body.__v;
-
-                        var newVideo = new VideoModel(video);
-
-                        newVideo.save(function (err) {
-                            if (err) {
-                                next(err);
-                            } else {
-                                res.status(201).json(newVideo);
-                            }
-                        });
-                    }else{
-                        var err = new Error('No video found with id ' + req.params.id);
-                        err.status = 401;
-                        next(err);
-                    }
+                    next(err);
                 }
             });
+        }
+    })
+    .put(function (req, res, next) {
+        //res.locals.processed = true;
+        if (req.params.id == req.body._id) {
+
+            var video = {};
+
+            Object.keys(VideoModel.schema.paths).forEach(function (key) {
+                if (req.body.hasOwnProperty(key)) {
+                    video[key] = req.body[key];
+                } else {
+                    if (VideoModel.schema.paths[key].options.default !== undefined)
+                        video[key] = VideoModel.schema.paths[key].options.default;
+                    else
+                        video[key] = undefined;
+                }
+            });
+
+            video['updatedAt'] = Date.now();
+
+            delete video.__v;
+            delete video.timestamp;
+
+            VideoModel.findByIdAndUpdate(req.params.id, video,
+                {runValidators: true, new: true},
+                function (err, video) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        res.status(201).json(video).end();
+                    }
+
+                });
         } else {
             var err = new Error('id of PUT resource and send JSON body are not equal ' + req.params.id + " " + req.body._id);
             err.status = codes.wrongrequest;
@@ -117,16 +155,17 @@ videos.route('/:id')
         }
     })
     .delete(function (req, res, next) {
-        VideoModel.findByIdAndRemove(req.params.id,
-            function (err, item) {
-                if (!err) {
-                    res.status(201).json(item);
-                } else {
-                    next(err);
-                }
-            });
+        res.locals.processed = true;
+        VideoModel.findByIdAndRemove(req.params.id, {}, function (err, item) {
+            if (!err) {
+                res.status(201).json(item).end();
+            } else {
+                next(err);
+            }
+        });
     })
     .patch(function (req, res, next) {
+        res.locals.processed = true;
         if (req.body.id && req.params.id != req.body.id) {
             var err = new Error('id of PUT resource and send JSON body are not equal ' + req.params.id + " " + req.body.id);
             err.status = codes.wrongrequest;
@@ -134,13 +173,19 @@ videos.route('/:id')
 
         } else {
 
-            delete req.body._id;
             delete req.body.__v;
 
-            VideoModel.findByIdAndUpdate(req.params.id, req.body, {new: true},
+            var options = {
+                new: true,
+                runValidators: true
+            };
+
+            req.body['updatedAt'] = Date.now();
+
+            VideoModel.findByIdAndUpdate(req.params.id, req.body, options,
                 function (err, item) {
                     if (!err) {
-                        res.status(201).json(item);
+                        res.status(201).json(item).end();
                     } else {
                         next(err);
                     }
