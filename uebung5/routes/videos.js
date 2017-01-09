@@ -33,14 +33,44 @@ var VideoModel = require('../models/video');
 
 // routes **********************
 videos.route('/')
-    .get(function(req, res, next) {
+    .get(function (req, res, next) {
         res.locals.processed = true;
-        VideoModel.find({}, function (err, items) {
+
+
+
+        // FILTER BONUS TASK 4
+        var filters = {};
+        if (req.query.filter) {
+            req.query.filter.split(",").forEach(function (key) {
+
+                var ok = false;
+                Object.keys(VideoModel.schema.paths).forEach(function (schemaKey) {
+                    if(schemaKey == key) {
+                        ok = true;
+                    }
+                });
+
+                if(!ok) {
+                    var err = new Error("filter " + key + " does not exist!");
+                    err.status = 400;
+                    throw err;
+                } else {
+                    filters[key] = true;
+                }
+            });
+        }
+        // BONUS END
+
+
+
+
+        // {} > search in all items
+        VideoModel.find({}, filters, function (err, items) {
 
             // search in items (list)
-            if(!err)   {
+            if (!err) {
                 // items in database available
-                if(items.length > 0) {
+                if (items.length > 0) {
                     res.status(200).json(items).end();
                 } else {
                     // NO CONTENT > empty database
@@ -56,7 +86,7 @@ videos.route('/')
             }
         })
     })
-    .post(function(req,res,next) {
+    .post(function (req, res, next) {
         res.locals.processed = true;
         // set new timestamp and overhand it in req.body
         req.body.timestamp = new Date().getTime();
@@ -78,7 +108,7 @@ videos.route('/')
     })
 
     // ALL > all other requests are not allowed > error output
-    .all(function(req, res, next) {
+    .all(function (req, res, next) {
         if (res.locals.processed) {
             next();
         } else {
@@ -94,12 +124,40 @@ videos.route('/')
  */
 
 videos.route('/:id')
-    .get(function(req, res,next) {
+    .get(function (req, res, next) {
         res.locals.processed = true;
+
+
+
+        // FILTER BONUS TASK 4
+        var filters = {};
+        if (req.query.filter) {
+            req.query.filter.split(",").forEach(function (key) {
+
+                var ok = false;
+                Object.keys(VideoModel.schema.paths).forEach(function (schemaKey) {
+                    if(schemaKey == key) {
+                        ok = true;
+                    }
+                });
+
+                if(!ok) {
+                    var err = new Error("filter " + key + " does not exist!");
+                    err.status = 400;
+                    throw err;
+                } else {
+                    filters[key] = true;
+                }
+            });
+        }
+        // BONUS END
+
+
+
         // req.params.id = id in URL
-        VideoModel.findById(req.params.id, function(err, video){
-            if(!err) {
-                    res.status(200).json(video).end();
+        VideoModel.findById(req.params.id, filters, function (err, video) {
+            if (!err) {
+                res.status(200).json(video).end();
             } else {
                 err.status = 404;
                 err.message = "Video with id: " + req.params.id + " does not exist.";
@@ -107,41 +165,49 @@ videos.route('/:id')
             }
         })
     })
-    .put(function(req, res, next) {
+    .put(function (req, res, next) {
 
         // change whole object
+        // ID must be set in body part
         res.locals.processed = true;
-        var id = parseInt(req.params.id);
 
-        VideoModel.findById(req.params.id, function (err, oldVideo) {
-            if(!err) {
-                req.body.timestamp = new Date().getTime();
-                var newVideo = new VideoModel(req.body);
-                // update video
-                newVideo.save(function (err) {
-                    if (!err) {
-                        // no error
-                        res.status(201).json(newVideo).end();
-                    } else {
-                        // error > no save occured
-                        err.status = 400;
-                        //err.message += ' in fields: ' + Object.getOwnPropertyNames(err.errors);
-                        next(err);
-                    }
-                });
-            } else {
-                err.status = 404;
-                err.message = "Video with id: " + req.params.id + " does not exist.";
-                next(err);
-            }
-        });
+        // check if id of URL is identical with body id
+        if (req.params.id == req.body._id) {
+
+            VideoModel.findById(req.params.id, function (err, oldVideo) {
+                if (!err) {
+                    req.body.timestamp = new Date().getTime();
+                    var newVideo = new VideoModel(req.body);
+                    // update video
+                    newVideo.save(function (err) {
+                        if (!err) {
+                            // no error
+                            res.status(201).json(newVideo).end();
+                        } else {
+                            // error > no save occured
+                            err.status = 400;
+                            //err.message += ' in fields: ' + Object.getOwnPropertyNames(err.errors);
+                            next(err);
+                        }
+                    });
+                } else {
+                    err.status = 404;
+                    err.message = "Video with id: " + req.params.id + " does not exist.";
+                    next(err);
+                }
+            });
+        } else {
+            var err = new Error("id of put resource and sent JSON body are not equal." + req.params.id + " " + req.body._id);
+            err.status = 406;
+            next(err);
+        }
     })
-    .delete(function(req,res,next) {
+    .delete(function (req, res, next) {
         res.locals.processed = true;
         var id = parseInt(req.params.id);
 
-        VideoModel.findByIdAndRemove(req.params.id, function(err, video) {
-            if(!err) {
+        VideoModel.findByIdAndRemove(req.params.id, function (err, video) {
+            if (!err) {
                 console.log(video);
                 res.status(204).end();
             } else {
@@ -153,13 +219,17 @@ videos.route('/:id')
 
     })
     // change specificous attribute
-    .patch(function(req,res,next) {
+    .patch(function (req, res, next) {
         res.locals.processed = true;
         // new True > returns a modified document
         // runValidators > Validation Schema is considered
         // setDefaultsOnInsert > will apply the default values to the ModelSchema
-        VideoModel.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true, setDefaultsOnInsert: true},function(err, video) {
-            if(!err) {
+        VideoModel.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true,
+            setDefaultsOnInsert: true
+        }, function (err, video) {
+            if (!err) {
                 res.status(200).json(video).end();
             } else {
                 err.status = 406;
@@ -169,7 +239,7 @@ videos.route('/:id')
         })
     })
 
-    .all(function(req, res, next) {
+    .all(function (req, res, next) {
         if (res.locals.processed) {
             next();
         } else {
@@ -183,7 +253,7 @@ videos.route('/:id')
 
 // this middleware function can be used, if you like or remove it
 // it looks for object(s) in res.locals.items and if they exist, they are send to the client as json
-videos.use(function(req, res, next){
+videos.use(function (req, res, next) {
     // if anything to send has been added to res.locals.items
     if (res.locals.items) {
         // then we send it as json and remove it
