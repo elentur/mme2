@@ -31,60 +31,75 @@ var VideoModel = require('../models/video');
  * ROUTE FOR ALL VIDEOS WITHOUT ID
  */
 
+
+/**
+ * Checks if a filter was set and puts it in a Obj. If a field in the filter no correspondence to the database field
+ * undefined will be returned
+ * @param filter
+ * @return {*}
+ */
+var getFilterFields = function (filter) {
+
+    if (!filter) return {};
+
+    var filters = {}, fieldNotFound = false;
+
+    var fields = Object.keys(VideoModel.schema.paths);
+
+    filter.split(",").forEach(function (key) {
+
+        if (fields.indexOf(key) !== -1) {
+            filters[key] = true;
+        } else {
+            fieldNotFound = true
+        }
+    });
+
+    return fieldNotFound ? undefined : filters;
+};
+
 // routes **********************
 videos.route('/')
     .get(function (req, res, next) {
         res.locals.processed = true;
 
+        var filters = getFilterFields(req.query.filter);
 
+        if (!filters) {
+            var err = new Error("One of the fields in the filter does not exist!");
+            err.status = 400;
+            next(err);
+        } else {
 
-        // FILTER BONUS TASK 4
-        var filters = {};
-        if (req.query.filter) {
-            req.query.filter.split(",").forEach(function (key) {
+            // TODO test test test
 
-                var ok = false;
-                Object.keys(VideoModel.schema.paths).forEach(function (schemaKey) {
-                    if(schemaKey == key) {
-                        ok = true;
+            var limit = (req.query.limit && req.query.limit > 0 ) ? parseInt(req.query.limit) : 0;
+            var offset = (req.query.offset && req.query.offset > 0 ) ? parseInt(req.query.offset) : 0;
+
+            // {} > search in all items
+            VideoModel.find({}, filters) // seaching with filter
+                .limit(limit) // sets limit if exists
+                .skip(offset) // sets offset if exists
+                .exec(function (err, items) { // executes the db query
+
+                    // search in items (list)
+                    if (!err) {
+                        // items in database available
+                        if (items.length > 0) {
+                            res.status(200).json(items).end();
+                        } else {
+                            // NO CONTENT > empty database
+                            res.status(204).json().end();
+                        }
+
+                        // get did not work
+                    } else {
+                        err.status = 400;
+                        next(err);
                     }
                 });
-
-                if(!ok) {
-                    var err = new Error("filter " + key + " does not exist!");
-                    err.status = 400;
-                    throw err;
-                } else {
-                    filters[key] = true;
-                }
-            });
         }
-        // BONUS END
 
-
-
-
-        // {} > search in all items
-        VideoModel.find({}, filters, function (err, items) {
-
-            // search in items (list)
-            if (!err) {
-                // items in database available
-                if (items.length > 0) {
-                    res.status(200).json(items).end();
-                } else {
-                    // NO CONTENT > empty database
-                    res.status(204).json().end();
-                }
-
-                // get did not work
-            } else {
-                err.status = 400;
-                err.message += ' in fields: ' + Object.getOwnPropertyNames(err.errors);
-                console.log(err.errors);
-                next(err);
-            }
-        })
     })
     .post(function (req, res, next) {
         res.locals.processed = true;
@@ -127,43 +142,24 @@ videos.route('/:id')
     .get(function (req, res, next) {
         res.locals.processed = true;
 
+        var filters = getFilterFields(req.query.filter);
 
-
-        // FILTER BONUS TASK 4
-        var filters = {};
-        if (req.query.filter) {
-            req.query.filter.split(",").forEach(function (key) {
-
-                var ok = false;
-                Object.keys(VideoModel.schema.paths).forEach(function (schemaKey) {
-                    if(schemaKey == key) {
-                        ok = true;
-                    }
-                });
-
-                if(!ok) {
-                    var err = new Error("filter " + key + " does not exist!");
-                    err.status = 400;
-                    throw err;
+        if (!filters) {
+            var err = new Error("One of the fields in the filter does not exist!");
+            err.status = 400;
+            next(err);
+        } else {
+            // req.params.id = id in URL
+            VideoModel.findById(req.params.id, filters, function (err, video) {
+                if (!err) {
+                    res.status(200).json(video).end();
                 } else {
-                    filters[key] = true;
+                    err.status = 404;
+                    err.message = "Video with id: " + req.params.id + " does not exist.";
+                    next(err);
                 }
             });
         }
-        // BONUS END
-
-
-
-        // req.params.id = id in URL
-        VideoModel.findById(req.params.id, filters, function (err, video) {
-            if (!err) {
-                res.status(200).json(video).end();
-            } else {
-                err.status = 404;
-                err.message = "Video with id: " + req.params.id + " does not exist.";
-                next(err);
-            }
-        })
     })
     .put(function (req, res, next) {
 
@@ -174,31 +170,41 @@ videos.route('/:id')
         // check if id of URL is identical with body id
         if (req.params.id == req.body._id) {
 
-            VideoModel.findById(req.params.id, function (err, oldVideo) {
-                if (!err) {
-                    req.body.timestamp = new Date().getTime();
-                    var newVideo = new VideoModel(req.body);
-                    // update video
-                    newVideo.save(function (err) {
-                        if (!err) {
-                            // no error
-                            res.status(201).json(newVideo).end();
-                        } else {
-                            // error > no save occured
-                            err.status = 400;
-                            //err.message += ' in fields: ' + Object.getOwnPropertyNames(err.errors);
-                            next(err);
-                        }
-                    });
+            var video = {};
+
+            Object.keys(VideoModel.schema.paths).forEach(function (key) {
+                if (req.body.hasOwnProperty(key)) {
+                    video[key] = req.body[key];
                 } else {
-                    err.status = 404;
-                    err.message = "Video with id: " + req.params.id + " does not exist.";
-                    next(err);
+                    if (VideoModel.schema.paths[key].options.default !== undefined)
+                        video[key] = VideoModel.schema.paths[key].options.default;
+                    else
+                        video[key] = undefined;
                 }
             });
+
+            // TODO checking, if updatedAt in the body is the same as in our DB
+
+            // setting updatedAt to the current timestamp
+            video['updatedAt'] = Date.now();
+
+            // we don't want overwrite this fields
+            delete video.__v;
+            delete video.timestamp;
+
+            VideoModel.findByIdAndUpdate(req.params.id, video,
+                {runValidators: true, new: true},
+                function (err, video) {
+                    if (err) {
+                        next(err);
+                    } else {
+                        res.status(201).json(video).end();
+                    }
+
+                });
         } else {
-            var err = new Error("id of put resource and sent JSON body are not equal." + req.params.id + " " + req.body._id);
-            err.status = 406;
+            var err = new Error('id of PUT resource and send JSON body are not equal ' + req.params.id + " " + req.body._id);
+            err.status = codes.wrongrequest;
             next(err);
         }
     })
@@ -224,11 +230,17 @@ videos.route('/:id')
         // new True > returns a modified document
         // runValidators > Validation Schema is considered
         // setDefaultsOnInsert > will apply the default values to the ModelSchema
-        VideoModel.findByIdAndUpdate(req.params.id, req.body, {
+
+
+        var options = {
             new: true,
-            runValidators: true,
-            setDefaultsOnInsert: true
-        }, function (err, video) {
+            runValidators: true
+        };
+
+        // setting updatedAt to the current timestamp
+        req.body['updatedAt'] = Date.now();
+
+        VideoModel.findByIdAndUpdate(req.params.id, req.body, options, function (err, video) {
             if (!err) {
                 res.status(200).json(video).end();
             } else {
