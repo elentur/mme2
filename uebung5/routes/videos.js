@@ -21,6 +21,7 @@ var videos = express.Router();
 
 // initialize evil corp database
 var mongoose = require("mongoose");
+// connect DB, create if not exists
 mongoose.connect('mongodb://localhost/evilCorpMainServer');
 
 var VideoModel = require('../models/video');
@@ -80,7 +81,7 @@ videos.route('/')
          * FILTER on get request
          *
          */
-        // save all entered filter params in URL (already seperated in function)
+            // save all entered filter params in URL (already seperated in function)
         var filters = getFilterFields(req.query.filter);
 
         // throw error message if one of the entered filter in URL does not exist!
@@ -156,7 +157,7 @@ videos.route('/')
         } else {
             // reply with wrong method code 405
             var err = new Error('this method is not allowed at ' + req.originalUrl);
-            err.status = codes.wrongmethod;
+            err.status = 405;
             next(err);
         }
     });
@@ -169,14 +170,13 @@ videos.route('/:id')
     .get(function (req, res, next) {
         res.locals.processed = true;
 
-
         /**
          * BONUS TASK
          * FILTER on get request
          *
          */
 
-        // save all entered filter params in URL (already seperated in function)
+            // save all entered filter params in URL (already seperated in function)
         var filters = getFilterFields(req.query.filter);
 
         // throw error message if one of the entered filter in URL does not exist!
@@ -212,59 +212,39 @@ videos.route('/:id')
         // check if id of URL is identical with body id
         if (req.params.id == req.body._id) {
 
-            // create empty video object
-            var video = {};
-
-            // run through all keys of our VideoModel schema
-            Object.keys(VideoModel.schema.paths).forEach(function (key) {
-
-                // check if body has attribute that is identical with the key in our schema
-                if (req.body.hasOwnProperty(key)) {
-                    // save existing key and value in body part in our video object
-                    video[key] = req.body[key];
-
-                    // f.e. no title declared > undefined
-                    // no ranking > default value
-                    // key of out VideoModel schema is not part of body
-                } else {
-                    // check if there are default values and set them
-                    if (VideoModel.schema.paths[key].options.default !== undefined)
-                        video[key] = VideoModel.schema.paths[key].options.default;
-                    // set undefined > error has to be called > could have been required field such as title
-                    else
-                        video[key] = undefined;
-                }
-            });
-
-
-
-            // TODO checking, if updatedAt in the body is the same as in our DB
-
-            // setting updatedAt to the current timestamp
-            video['updatedAt'] = Date.now();
-
-            // we don't want overwrite these fields
+            // new VideoModel with default values
+            var video = new VideoModel(req.body);
+            // delete new created __v
             delete video.__v;
+            // delete new created timestamp
             delete video.timestamp;
+            // call Validator
+            var error = video.validateSync();
+            if (error) {
+                error.status = 400;
+                error.message += ' in fields: ' + Object.getOwnPropertyNames(error.errors);
+                next(error);
+            } else {
+                /**
+                 * PUT METHOD with Validator
+                 */
+                VideoModel.findByIdAndUpdate(req.params.id, video,
+                    // new True > to return a modified object
+                    {new: true},
+                    function (err, video) {
+                        if (err) {
+                            next(err);
+                        } else {
+                            res.status(201).json(video).end();
+                        }
 
-            /**
-             * PUT METHOD with Validator
-             */
-            VideoModel.findByIdAndUpdate(req.params.id, video,
-                {runValidators: true, new: true},
-                function (err, video) {
-                    if (err) {
-                        next(err);
-                    } else {
-                        res.status(201).json(video).end();
-                    }
-
-                });
+                    });
+            }
 
             // REQUEST ID and BODY ID are not identical
         } else {
-            var err = new Error('id of PUT resource and send JSON body are not equal ' + req.params.id + " " + req.body._id);
-            err.status = codes.wrongrequest;
+            var err = new Error('ID in URL and ID in body are not identical: URL:' + req.params.id + " Body: " + req.body._id);
+            err.status = 406;
             next(err);
         }
     })
@@ -272,7 +252,7 @@ videos.route('/:id')
         res.locals.processed = true;
         //var id = parseInt(req.params.id);
 
-        VideoModel.findByIdAndRemove(req.params.id, function (err, video) {
+        VideoModel.findByIdAndRemove(req.params.id, function (err) {
             if (!err) {
                 // delete was successful
                 res.status(204).end();
@@ -297,29 +277,43 @@ videos.route('/:id')
         // setDefaultsOnInsert > will apply the default values to the ModelSchema
 
 
-        // save controller flags in options object
-        var options = {
-            new: true,
-            runValidators: true
-        };
+        // check if id is set and id of URL is NOT identical with body id > error
+        if (req.body._id && req.params.id !== req.body._id) {
+            var err = new Error('ID in URL and ID in body are not identical: URL:' + req.params.id + " Body: " + req.body._id);
+            err.status = 406;
+            next(err);
 
-        // setting updatedAt to the current timestamp
-        req.body['updatedAt'] = Date.now();
+            // id is not set OR id is set and they are identical
+        } else {
 
+            // save controller flags in options object
+            var options = {
+                new: true,
+                runValidators: true
+            };
 
-        // PATCH with options object
-        VideoModel.findByIdAndUpdate(req.params.id, req.body, options, function (err, video) {
-            if (!err) {
-                // patch was successful
-                res.status(200).json(video).end();
+            // delete new created __v
+            delete req.body['__v'];
+            // delete new created timestamp
+            delete req.body['timestamp'];
+            // setting updatedAt to the current timestamp
+            req.body['updatedAt'] = Date.now();
 
-                // patch did not work > error
-            } else {
-                err.status = 406;
-                err.message += "video with id: " + req.params.id + " could not be updated!";
-                next(err);
-            }
-        })
+            // PATCH with options object
+            VideoModel.findByIdAndUpdate(req.params.id, req.body, options, function (err, video) {
+                if (!err) {
+                    // patch was successful
+                    console.log(video);
+                    res.status(200).json(video).end();
+
+                    // patch did not work > error
+                } else {
+                    err.status = 406;
+                    err.message += "video with id: " + req.params.id + " could not be updated!";
+                    next(err);
+                }
+            })
+        }
     })
 
     .all(function (req, res, next) {
@@ -328,7 +322,7 @@ videos.route('/:id')
         } else {
             // reply with wrong method code 405
             var err = new Error('this method is not allowed at ' + req.originalUrl);
-            err.status = codes.wrongmethod;
+            err.status = 405;
             next(err);
         }
     });
