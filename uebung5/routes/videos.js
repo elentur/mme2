@@ -100,11 +100,13 @@ videos.route('/')
             var limit = (req.query.limit && req.query.limit > 0 ) ? parseInt(req.query.limit) : 0;
             var offset = (req.query.offset && req.query.offset > 0 ) ? parseInt(req.query.offset) : 0;
 
+
             /**
              * GET FUNCTION > /VIDEOS
              */
             // {} > search in all items
             VideoModel.find({}, filters) // seaching with filter
+                // chaining
                 .limit(limit) // sets limit if exists
                 .skip(offset) // sets offset if exists
                 .exec(function (err, items) { // executes the db query
@@ -131,7 +133,7 @@ videos.route('/')
     .post(function (req, res, next) {
         res.locals.processed = true;
         // set new timestamp and overhand it in req.body
-        req.body.timestamp = new Date().getTime();
+        //req.body.timestamp = Date.now();
         var video = new VideoModel(req.body);
         // "save" method from mongoose > "save" writes in database
         video.save(function (err) {
@@ -214,12 +216,20 @@ videos.route('/:id')
 
             // new VideoModel with default values
             var video = new VideoModel(req.body);
-            // delete new created __v
-            delete video.__v;
-            // delete new created timestamp
-            delete video.timestamp;
+
             // call Validator
             var error = video.validateSync();
+
+            // delete new created __v
+            delete video['__v'];
+            // delete id > should never be changed/overwritten
+            delete video['_id'];
+            // delete new created timestamp
+            delete video['timestamp'];
+
+            // setting updatedAt to the current timestamp
+            video['updatedAt'] = Date.now();
+
             if (error) {
                 error.status = 400;
                 error.message += ' in fields: ' + Object.getOwnPropertyNames(error.errors);
@@ -235,7 +245,16 @@ videos.route('/:id')
                         if (err) {
                             next(err);
                         } else {
-                            res.status(201).json(video).end();
+                            if(video) {
+                                // video id exists and has been updated
+                                res.status(201).json(video).end();
+                            } else {
+                                // id does not exist
+                                var err = new Error('The ID does not exist in database: ' + req.params.id);
+                                err.status = 406;
+                                next(err);
+                            }
+
                         }
 
                     });
@@ -292,9 +311,11 @@ videos.route('/:id')
                 runValidators: true
             };
 
-            // delete new created __v
+            // delete new created __v, should never be changed/overwrittes
             delete req.body['__v'];
-            // delete new created timestamp
+            // delete id > should never be changed/overwritten
+            delete req.body['_id'];
+            // delete timestamp to guarantee that noone can change it
             delete req.body['timestamp'];
             // setting updatedAt to the current timestamp
             req.body['updatedAt'] = Date.now();
@@ -303,7 +324,6 @@ videos.route('/:id')
             VideoModel.findByIdAndUpdate(req.params.id, req.body, options, function (err, video) {
                 if (!err) {
                     // patch was successful
-                    console.log(video);
                     res.status(200).json(video).end();
 
                     // patch did not work > error
