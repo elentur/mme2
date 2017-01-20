@@ -15,6 +15,7 @@
 // 1.) require() function
 // 2.) module.exports
 // 3.) exports (which is module.exports)
+"use strict";
 
 var router = require('express').Router();
 
@@ -55,7 +56,7 @@ router.use(function(req, res, next) {
         err.status = 400;
         next(err);
     } else if ('PUT' === req.method && !(req.body.id || req.body._id)) {
-        err = new Error("content in body is missing field id or _id");
+        err = new Error("content in body is missing field id");
         err.status = 400;
         next(err);
     }

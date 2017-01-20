@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="author" content="Robert Dziuba, Marcus Bätz und Inga Schwarze">
+    <meta name="description" content="Musterlösung zu Übungsblatt 1">
+    <meta name="keywords" content="Videos">
+    <title>miniYoutube</title>
+
+    <!-- connect the CSS style and the javascript  -->
+    <link rel="stylesheet" href="css/app.css">
+    <script data-main="js/appclient" src="js/require.js" async defer></script>
+
+    <!-- optional nice font import -->
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Raleway'>
+    <!-- optional extra CSS style for smartphones -->
+    <link rel="stylesheet" href="css/app-smart.css" media="only screen
+                                                    and (min-device-width:320px)
+                                                    and (max-device-width:480px)">
+</head>
+<body>
+<header>
+    <h1>Willkommen</h1>
+    auf der Demo-Seite zum Einbinden von Videos.
+</header>
+<aside>
+    <h1>Weitere Videoseiten</h1>
+    <nav>
+        <a href="http://www.youtube.de">YouTube</a>
+        <a href="http://www.vimeo.com">Vimeo</a>
+        <a href="http://clipfish.de">Clipfish</a>
+    </nav>
+</aside>
+<main>
+    <script type="text/template" id="video-template">
+            <h1 id="current"><%= title %></h1>
+            <video controls>
+                <source src="http://techslides.com/demos/sample-videos/small.mp4" type="video/mp4">
+            </video>
+            <div class="controls">
+                <button name="play" title="Abspielen"></button>
+                <button name="pause" title="Pause"></button>
+                <button name="stop" title="Stop"></button>
+            </div>
+    </script>
+</main>
+<footer class="klass10">
+    <details>
+        <summary>erstellt von Johannes Konert</summary>
+        als Beispiel-Lösung für Übungsblatt 1 im Kurs MME2
+    </details>
+</footer>
+</body>
+</html>
