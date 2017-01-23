@@ -1,0 +1,26 @@
+/* CSS file for Exercise 1
+   this is an add-on style to patch the general desktop styles for small screens
+   to be included in html via media="only screen and (min-device-width:320px)
+                                                 and (max-device-width:480px)"
+   @media: smartphones
+   @author: Johannes Konert
+*/
+
+body { font-size: 0.7em;}
+body h1 {margin: 0.2em 0;}
+body > header {margin-top: 2%;}
+
+/* style for portrait mode: let everything be in row order (no side menu)*/
+@media(orientation: portrait) {
+    body > aside {
+        position: relative;
+        top: 0; left: 0; bottom: auto; right: auto;
+        width: 100%;
+        padding-top: 0.3em;
+        margin-top: 0.3em;
+    }
+    body > aside nav a {display: inline-flex;}
+    body > main {width: 98%; /* because we have a 1% margin */}
+}
+
+body>div { color: red; }

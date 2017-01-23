@@ -1,5 +1,8 @@
 /** Main app for server to start a small REST API for videos
- *  STATUS: unfinished
+ *  STATUS: finished
+ *  using mongoose, mongoDB
+ *
+ *  including DB-based support for GET-parameters filter and offset and limit
  *
  * Note: set your environment variables
  * NODE_ENV=development
@@ -17,24 +20,25 @@ var favicon = require('serve-favicon');
 var bodyParser = require('body-parser');
 var requestLogger = require('morgan');
 var debug = require('debug')('me2u5:server');
-var morgan = require('morgan');
+var mongoose = require('mongoose');
 
 // own modules
 var restAPIchecks = require('./restapi/request-checks.js');
 var errorResponseWare = require('./restapi/error-response');
 
-var videos = require('./routes/videos');
+var videoRouter = require('./routes/videos');
 
-
+// Configuration ***********************************
+// connecting the db
+var db = mongoose.connect('mongodb://localhost:27017/me2');
 
 // app creation
 var app = express();
 
 // Middlewares *************************************************
-app.use(favicon(path.join(__dirname, 'public', 'images/faviconbeuth.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'img/faviconbeuth.ico')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.json());
-app.use(morgan('tiny'));
 
 // logging
 app.use(requestLogger('dev'));
@@ -44,12 +48,7 @@ app.use(restAPIchecks);
 
 
 // Routes ******************************************************
-app.use('/videos', videos);
-
-
-
-
-
+app.use('/videos', videoRouter);
 
 // (from express-generator boilerplate  standard code)
 // Errorhandling and requests without proper URLs ************************
